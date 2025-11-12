@@ -37,6 +37,12 @@ const router = createRouter({
                     path: '/user',
                     name: 'user',
                     component: () => import('@/views/user/index.vue'),
+                },
+                // 新增：Linux 主机管理
+                {
+                    path: '/hosts',
+                    name: 'hosts',
+                    component: () => import('@/views/hosts/index.vue'),
                 }
             ]
         },

@@ -144,7 +144,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Pointer, RefreshRight, User, Lock, Key, Message, ChatDotRound, Monitor } from "@element-plus/icons-vue";
+import { Pointer, RefreshRight, Message, ChatDotRound, Monitor } from "@element-plus/icons-vue";
 import { ref, onMounted } from 'vue'
 import { LoginApi } from "@/api/login";
 import { ElNotification, type FormRules } from "element-plus";

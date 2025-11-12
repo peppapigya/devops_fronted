@@ -153,7 +153,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted ,computed} from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import {Plus, Delete, ArrowDown} from '@element-plus/icons-vue'
+import {Plus, Delete} from '@element-plus/icons-vue'
 import type {User} from "@/api/user/types.ts";
 // import {Icon} from "@/components/Icon";
 import {UserApi} from "@/api/user";

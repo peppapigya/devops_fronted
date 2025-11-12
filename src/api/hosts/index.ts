@@ -1,19 +1,19 @@
 import request from '@/config/axios'
-import type { CreateHostDTO, UpdateHostDTO } from './type'
+import type { CreateHostDTO, PageParamDTO, UpdateHostDTO } from './type'
 
 // 与 LoginApi 相同风格：返回已解析的数据
 export const HostsApi = {
   // 列表
-  list: async () => {
-    return await request.get({ url: '/hosts/page' })
+  list: async (data : PageParamDTO) => {
+    return await request.post({ url: '/hosts/page',data })
   },
   // 新增
   create: async (data: CreateHostDTO) => {
-    return await request.post({ url: '/hosts', data })
+    return await request.post({ url: '/hosts/', data })
   },
   // 更新
-  update: async (id: number, data: UpdateHostDTO) => {
-    return await request.put({ url: `/hosts/${id}`, data })
+  update: async ( data: UpdateHostDTO) => {
+    return await request.put({ url: `/hosts/`, data })
   },
   // 删除
   remove: async (id: number) => {

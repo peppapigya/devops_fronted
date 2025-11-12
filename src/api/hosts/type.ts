@@ -1,23 +1,29 @@
 // Host 及请求载荷类型，风格与登录模块保持一致
 export interface Host {
   id: number
-  name: string
+  hostName: string
   address: string
-  port: number
+  hostPort: number
   username: string
-  password?: string
+  hostPassword?: string
   remark?: string
   created_at?: string
   updated_at?: string
 }
 
 export interface CreateHostDTO {
-  name: string
+  hostName: string
   address: string
-  port: number
+  hostPort: number
   username: string
-  password?: string
+  hostPassword?: string
   remark?: string
+}
+
+export interface PageParamDTO {
+    pageSize: number
+    pageNumber: number
+    keyword?: string
 }
 
 export type UpdateHostDTO = CreateHostDTO

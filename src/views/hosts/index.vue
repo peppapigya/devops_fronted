@@ -27,15 +27,15 @@
       <el-card shadow="never" class="table-card">
         <el-table
           v-loading="loading"
-          :data="filteredHosts"
+          :data="hosts"  
           border
           stripe
           style="width: 100%"
           empty-text="暂无数据"
         >
-          <el-table-column prop="name" label="名称" min-width="160" />
+          <el-table-column prop="hostName" label="名称" min-width="160" />
           <el-table-column prop="address" label="地址/IP" min-width="180" />
-          <el-table-column prop="port" label="端口" width="100" />
+          <el-table-column prop="hostPort" label="端口" width="100" />
           <el-table-column prop="username" label="用户名" min-width="140" />
           <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip />
           <el-table-column label="创建时间" min-width="180">
@@ -48,14 +48,23 @@
               <el-button size="small" :icon="Edit" @click="openEdit(row)">编辑</el-button>
               <el-button size="small" type="primary" :icon="Link" @click="onTest(row.id)">测试连接</el-button>
               <el-button size="small" type="warning" :icon="Monitor" @click="onInspect(row.id)">巡检</el-button>
-              <el-popconfirm title="确认删除该主机？" @confirm="onDelete(row.id)">
-                <template #reference>
-                  <el-button size="small" type="danger" :icon="Delete">删除</el-button>
-                </template>
-              </el-popconfirm>
+              <el-button size="small" type="danger" :icon="Delete" @click="onDelete(row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
+
+        <!-- 新增：分页控件 -->
+        <el-pagination
+          class="pagination"
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="pageParam.pageSize"
+          :current-page="pageParam.pageNumber"
+          @size-change="onPageSizeChange"
+          @current-change="onPageChange"
+        />
       </el-card>
   
       <!-- 结果卡片：巡检与连接测试 -->
@@ -84,20 +93,20 @@
       <!-- 弹窗表单：新增/编辑主机 -->
       <el-dialog v-model="dialogVisible" :title="form.id ? '编辑主机' : '新增主机'" width="520px" destroy-on-close>
         <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
-          <el-form-item label="名称" prop="name">
-            <el-input v-model="form.name" placeholder="例如：生产-DB01" />
+          <el-form-item label="名称" prop="hostName">
+            <el-input v-model="form.hostName" placeholder="例如：生产-DB01" />
           </el-form-item>
           <el-form-item label="地址/IP" prop="address">
             <el-input v-model="form.address" placeholder="例如：192.168.1.10" />
           </el-form-item>
-          <el-form-item label="端口" prop="port">
-            <el-input-number v-model="form.port" :min="1" :max="65535" :step="1" controls-position="right" />
+          <el-form-item label="端口" prop="hostPort">
+            <el-input-number v-model="form.hostPort" :min="1" :max="65535" :step="1" controls-position="right" />
           </el-form-item>
           <el-form-item label="用户名" prop="username">
             <el-input v-model="form.username" placeholder="例如：root" />
           </el-form-item>
           <el-form-item label="密码">
-            <el-input v-model="form.password" type="password" placeholder="SSH 密码（可选）" show-password />
+            <el-input v-model="form.hostPassword" type="hostPassword" placeholder="SSH 密码（可选）" show-hostPassword />
           </el-form-item>
           <el-form-item label="备注">
             <el-input 
@@ -129,10 +138,10 @@
   
   <script setup lang="ts">
   // 引入 Vue 与 Element Plus
-  import { onMounted, reactive, ref, computed } from 'vue'
+  import { onMounted, reactive, ref } from 'vue'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
   import { Edit, Delete, Link, Search, Plus, Monitor } from '@element-plus/icons-vue'
-  
+  import { PageParamDTO } from '@/api/hosts/type'
   // 将本地类型替换为统一的 API 类型，并引入 HostsApi
   import { HostsApi } from '@/api/hosts/index'
   import type { Host } from '@/api/hosts/type'
@@ -141,17 +150,28 @@
   const hosts = ref<Host[]>([])
   const loading = ref<boolean>(false)
   
+  const total = ref<number>(0)
+
+
+  const pageParam = ref<PageParamDTO>( {
+    pageSize: 10,
+    pageNumber: 1,
+    keyword: ''
+  })
+  
   // 查询条件
   const query = reactive({ keyword: '' })
-  const filteredHosts = computed(() => {
-    const kw = query.keyword.trim().toLowerCase()
-    if (!kw) return hosts.value
-    return hosts.value.filter(h =>
-      [h.name, h.address, h.username].some(v => (v || '').toLowerCase().includes(kw))
-    )
-  })
+  
+  // 新增：分页后的数据源
+  // const pagedHosts = computed(() => {
+  //   const start = (currentPage.value - 1) * pageSize.value
+  //   return filteredHosts.value.slice(start, start + pageSize.value)
+  // })
+  
   function resetQuery() {
-    query.keyword = ''
+    pageParam.value.pageSize = 10
+    pageParam.value.pageNumber = 1
+    pageParam.value.keyword = ''
     loadHosts()
   }
   
@@ -165,27 +185,27 @@
   const formRef = ref<FormInstance>()
   const form = reactive<Host>({
     id: 0,
-    name: '',
+    hostName: '',
     address: '',
-    port: 22,
+    hostPort: 22,
     username: '',
-    password: '',
+    hostPassword: '',
     remark: '',
   })
   const formRules: FormRules = {
-    name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+    hostName: [{ required: true, message: '请输入名称', trigger: 'blur' }],
     address: [{ required: true, message: '请输入地址或 IP', trigger: 'blur' }],
-    port: [{ required: true, message: '请输入端口', trigger: 'change' }],
+    hostPort: [{ required: true, message: '请输入端口', trigger: 'change' }],
     username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   }
   
   function resetForm() {
     form.id = 0
-    form.name = ''
+    form.hostName = ''
     form.address = ''
-    form.port = 22
+    form.hostPort = 22
     form.username = ''
-    form.password = ''
+    form.hostPassword = ''
     form.remark = ''
   }
   
@@ -195,11 +215,11 @@
   }
   function openEdit(h: Host) {
     form.id = h.id
-    form.name = h.name
+    form.hostName = h.hostName
     form.address = h.address
-    form.port = h.port
+    form.hostPort = h.hostPort
     form.username = h.username
-    form.password = '' // 更新时可选填
+    form.hostPassword = h.hostPassword // 更新时可选填
     form.remark = h.remark || ''
     dialogVisible.value = true
   }
@@ -220,16 +240,28 @@
   async function loadHosts() {
     loading.value = true
     try {
-      const res = await HostsApi.list()
-      hosts.value = res
+      const res = await HostsApi.list(pageParam.value)
+      hosts.value = res.data
+      total.value = res.total
+      pageParam.value.pageSize = res.pageSize
+      pageParam.value.pageNumber = res.pageNumber
     } catch (e: any) {
       ElMessage.error(e.message || '加载失败')
     } finally {
       loading.value = false
     }
   }
+
+function onPageChange(page: number) {
+  pageParam.value.pageNumber= page
+  loadHosts()
+}
+function onPageSizeChange(size: number) {
+  pageParam.value.pageSize = size
+  pageParam.value.pageNumber = 1
+  loadHosts()
+}
   
-  // async function saveHost() { 使用 HostsApi.create / HostsApi.update
   async function saveHost() {
     if (!formRef.value) return
     await formRef.value.validate(async (valid) => {
@@ -237,15 +269,16 @@
       saving.value = true
       try {
         const payload = {
-          name: form.name.trim(),
+          id: form.id,
+          hostName: form.hostName.trim(),
           address: form.address.trim(),
-          port: form.port || 22,
+          hostPort: form.hostPort || 22,
           username: form.username.trim(),
-          password: form.password || '',
+          hostPassword: form.hostPassword || '',
           remark: (form.remark || '').trim(),
         }
         if (form.id) {
-          await HostsApi.update(form.id, payload)
+          await HostsApi.update(payload)
           ElMessage.success('更新成功')
         } else {
           await HostsApi.create(payload)
@@ -262,7 +295,6 @@
     })
   }
   
-  // async function onDelete(id: number) { 使用 HostsApi.remove
   async function onDelete(id: number) {
     try {
       await ElMessageBox.confirm('确认删除该主机？', '提示', { type: 'warning' })
@@ -313,4 +345,6 @@
   .result-card { }
   .card-header { display: flex; justify-content: space-between; align-items: center; }
   .result-pre { background: #f6f8fa; padding: 12px; border-radius: 4px; white-space: pre-wrap; }
+  /* 新增：分页样式 */
+  .pagination { margin-top: 12px; display: flex; justify-content: flex-end; }
   </style>

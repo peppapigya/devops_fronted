@@ -76,7 +76,7 @@
                       />
                       <div class="captcha-container" @click="onGetCode">
                         <el-image
-                            :src="loginForm.imagUrl"
+                            :src="loginForm.imageCode"
                             class="captcha-image"
                         />
                         <el-icon class="refresh-icon">
@@ -158,13 +158,15 @@ const loginForm = ref<UserLoginVO>({
   username: '',
   password: '',
   code: '',
-  imagUrl: ''
+  captchaId: '',
+  imageCode: ''
 })
 
 const onGetCode = async () => {
   const res = await LoginApi.getCode();
   console.log("验证码数据", res);
-  loginForm.value.imagUrl = res.imagUrl
+  loginForm.value.captchaId = res.captchaId
+  loginForm.value.imageCode = res.code
 }
 
 const btnFlag = ref<boolean>(false)

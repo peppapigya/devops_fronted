@@ -2,7 +2,8 @@ export type UserLoginVO = {
     username: string
     password: string
     code: string
-    imagUrl: string
+    captchaId: string
+    imageCode: string
 }
 export type TokenType = {
     id: number // 编号

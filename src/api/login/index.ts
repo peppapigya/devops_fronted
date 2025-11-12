@@ -9,6 +9,6 @@ export const LoginApi = {
     },
     // 获取code
     getCode: async () => {
-        return await request.get({url: '/code/code'});
+        return await request.get({url: '/sysUser/captcha'});
     }
 }

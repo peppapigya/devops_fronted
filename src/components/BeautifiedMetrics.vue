@@ -93,71 +93,80 @@
           </el-descriptions>
         </el-tab-pane>
   
+        <!-- 磁盘：新增滚动容器 -->
         <el-tab-pane label="磁盘">
-          <el-table :data="data?.disk || []" border stripe style="width: 100%">
-            <el-table-column prop="filesystem" label="文件系统" min-width="160" />
-            <el-table-column prop="mounted_on" label="挂载点" min-width="160" />
-            <el-table-column prop="size" label="容量" min-width="120" />
-            <el-table-column prop="used" label="已用" min-width="120" />
-            <el-table-column prop="available" label="可用" min-width="120" />
-            <el-table-column label="使用率" min-width="200">
-              <template #default="{ row }">
-                <el-progress :percentage="row.usage_percent || 0" :status="progressStatus(row.usage_percent || 0)" />
-              </template>
-            </el-table-column>
-          </el-table>
+          <div class="scroll-pane">
+            <el-table :data="data?.disk || []" border stripe style="width: 100%">
+              <el-table-column prop="filesystem" label="文件系统" min-width="160" />
+              <el-table-column prop="mounted_on" label="挂载点" min-width="160" />
+              <el-table-column prop="size" label="容量" min-width="120" />
+              <el-table-column prop="used" label="已用" min-width="120" />
+              <el-table-column prop="available" label="可用" min-width="120" />
+              <el-table-column label="使用率" min-width="200">
+                <template #default="{ row }">
+                  <el-progress :percentage="row.usage_percent || 0" :status="progressStatus(row.usage_percent || 0)" />
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
         </el-tab-pane>
   
+        <!-- 网络：新增滚动容器 -->
         <el-tab-pane label="网络">
-          <div class="section-title">连接统计</div>
-          <el-descriptions :column="3" border>
-            <el-descriptions-item label="总连接">{{ data?.network?.connections?.total }}</el-descriptions-item>
-            <el-descriptions-item label="监听">{{ data?.network?.connections?.listening }}</el-descriptions-item>
-            <el-descriptions-item label="已建立">{{ data?.network?.connections?.established }}</el-descriptions-item>
-          </el-descriptions>
-          <div class="section-title">接口</div>
-          <el-table :data="data?.network?.interfaces || []" border stripe>
-            <el-table-column prop="name" label="名称" min-width="140" />
-            <el-table-column label="IPv4" min-width="200">
-              <template #default="{ row }">
-                <el-tag v-for="(ip, i) in row.ipv4 || []" :key="i" class="mr8">{{ ip }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="IPv6" min-width="200">
-              <template #default="{ row }">
-                <el-tag v-for="(ip, i) in row.ipv6 || []" :key="i" class="mr8">{{ ip }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="type" label="类型" min-width="100" />
-          </el-table>
+          <div class="scroll-pane">
+            <div class="section-title">连接统计</div>
+            <el-descriptions :column="3" border>
+              <el-descriptions-item label="总连接">{{ data?.network?.connections?.total }}</el-descriptions-item>
+              <el-descriptions-item label="监听">{{ data?.network?.connections?.listening }}</el-descriptions-item>
+              <el-descriptions-item label="已建立">{{ data?.network?.connections?.established }}</el-descriptions-item>
+            </el-descriptions>
+            <div class="section-title">接口</div>
+            <el-table :data="data?.network?.interfaces || []" border stripe>
+              <el-table-column prop="name" label="名称" min-width="140" />
+              <el-table-column label="IPv4" min-width="200">
+                <template #default="{ row }">
+                  <el-tag v-for="(ip, i) in row.ipv4 || []" :key="i" class="mr8">{{ ip }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="IPv6" min-width="200">
+                <template #default="{ row }">
+                  <el-tag v-for="(ip, i) in row.ipv6 || []" :key="i" class="mr8">{{ ip }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="type" label="类型" min-width="100" />
+            </el-table>
+          </div>
         </el-tab-pane>
   
+        <!-- 进程：新增滚动容器 -->
         <el-tab-pane label="进程">
-          <el-descriptions :column="5" border>
-            <el-descriptions-item label="总数">{{ data?.processes?.total }}</el-descriptions-item>
-            <el-descriptions-item label="运行">{{ data?.processes?.running }}</el-descriptions-item>
-            <el-descriptions-item label="睡眠">{{ data?.processes?.sleeping }}</el-descriptions-item>
-            <el-descriptions-item label="停止">{{ data?.processes?.stopped }}</el-descriptions-item>
-            <el-descriptions-item label="僵尸">{{ data?.processes?.zombie }}</el-descriptions-item>
-          </el-descriptions>
-          <div class="section-title">Top 进程</div>
-          <el-table :data="data?.processes?.top_processes || []" border stripe>
-            <el-table-column prop="pid" label="PID" width="90" />
-            <el-table-column prop="name" label="名称" min-width="160" />
-            <el-table-column prop="user" label="用户" min-width="140" />
-            <el-table-column label="CPU%" width="140">
-              <template #default="{ row }">
-                <el-progress :percentage="roundNum(row.cpu_percent)" :status="progressStatus(roundNum(row.cpu_percent))" />
-              </template>
-            </el-table-column>
-            <el-table-column label="内存%" width="140">
-              <template #default="{ row }">
-                <el-progress :percentage="roundNum(row.memory_percent)" :status="progressStatus(roundNum(row.memory_percent))" />
-              </template>
-            </el-table-column>
-            <el-table-column prop="memory_usage" label="内存占用" min-width="140" />
-            <el-table-column prop="state" label="状态" width="110" />
-          </el-table>
+          <div class="scroll-pane">
+            <el-descriptions :column="5" border>
+              <el-descriptions-item label="总数">{{ data?.processes?.total }}</el-descriptions-item>
+              <el-descriptions-item label="运行">{{ data?.processes?.running }}</el-descriptions-item>
+              <el-descriptions-item label="睡眠">{{ data?.processes?.sleeping }}</el-descriptions-item>
+              <el-descriptions-item label="停止">{{ data?.processes?.stopped }}</el-descriptions-item>
+              <el-descriptions-item label="僵尸">{{ data?.processes?.zombie }}</el-descriptions-item>
+            </el-descriptions>
+            <div class="section-title">Top 进程</div>
+            <el-table :data="data?.processes?.top_processes || []" border stripe>
+              <el-table-column prop="pid" label="PID" width="90" />
+              <el-table-column prop="name" label="名称" min-width="160" />
+              <el-table-column prop="user" label="用户" min-width="140" />
+              <el-table-column label="CPU%" width="140">
+                <template #default="{ row }">
+                  <el-progress :percentage="roundNum(row.cpu_percent)" :status="progressStatus(roundNum(row.cpu_percent))" />
+                </template>
+              </el-table-column>
+              <el-table-column label="内存%" width="140">
+                <template #default="{ row }">
+                  <el-progress :percentage="roundNum(row.memory_percent)" :status="progressStatus(roundNum(row.memory_percent))" />
+                </template>
+              </el-table-column>
+              <el-table-column prop="memory_usage" label="内存占用" min-width="140" />
+              <el-table-column prop="state" label="状态" width="110" />
+            </el-table>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -202,6 +211,13 @@
   .progress-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .progress-item { display: flex; flex-direction: column; gap: 6px; }
   
+  /* 新增：滚动容器样式（磁盘/网络/进程） */
+  .scroll-pane {
+    max-height: 360px;         /* 可按需要调整高度 */
+    overflow-y: auto;
+    padding-right: 4px;        /* 给滚动条留一点内边距 */
+  }
+
   .mr8 { margin-right: 8px; }
   .mb8 { margin-bottom: 8px; }
   </style>

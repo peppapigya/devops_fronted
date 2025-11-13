@@ -43,57 +43,110 @@
             <el-descriptions-item label="缓存">{{ data?.cpu?.cache }}</el-descriptions-item>
           </el-descriptions>
           <div class="section-title">负载</div>
-          <div class="progress-row">
+          <div class="progress-row-3">
             <div class="progress-item">
               <div>1 分钟</div>
-              <!-- 修改：数字开头的键用下标访问 -->
-              <el-progress :percentage="toPercent(data?.cpu?.load_average?.['1min'])" :status="progressStatus(toPercent(data?.cpu?.load_average?.['1min']))" />
+              <el-progress
+                :percentage="loadToPercent(data?.cpu?.load_average?.['1min'], data?.cpu?.cores)"
+                :status="progressStatus(loadToPercent(data?.cpu?.load_average?.['1min'], data?.cpu?.cores))"
+                :text-inside="true"
+                :show-text="true"
+                :stroke-width="12"
+                :format="formatPct"
+              />
             </div>
             <div class="progress-item">
               <div>5 分钟</div>
-              <el-progress :percentage="toPercent(data?.cpu?.load_average?.['5min'])" :status="progressStatus(toPercent(data?.cpu?.load_average?.['5min']))" />
+              <el-progress
+                :percentage="loadToPercent(data?.cpu?.load_average?.['5min'], data?.cpu?.cores)"
+                :status="progressStatus(loadToPercent(data?.cpu?.load_average?.['5min'], data?.cpu?.cores))"
+                :text-inside="true"
+                :show-text="true"
+                :stroke-width="12"
+                :format="formatPct"
+              />
             </div>
             <div class="progress-item">
               <div>15 分钟</div>
-              <el-progress :percentage="toPercent(data?.cpu?.load_average?.['15min'])" :status="progressStatus(toPercent(data?.cpu?.load_average?.['15min']))" />
+              <el-progress
+                :percentage="loadToPercent(data?.cpu?.load_average?.['15min'], data?.cpu?.cores)"
+                :status="progressStatus(loadToPercent(data?.cpu?.load_average?.['15min'], data?.cpu?.cores))"
+                :text-inside="true"
+                :show-text="true"
+                :stroke-width="12"
+                :format="formatPct"
+              />
             </div>
           </div>
           <div class="section-title">CPU 使用率</div>
-          <div class="progress-row">
+          <div class="progress-row-2">
             <div class="progress-item">
-              <div>User</div>
-              <el-progress :percentage="roundNum(data?.cpu?.usage?.user)" :status="progressStatus(roundNum(data?.cpu?.usage?.user))" />
+              <div>用户态</div>
+              <el-progress
+               :percentage="pct(data?.cpu?.usage?.user)"
+               :status="progressStatus(pct(data?.cpu?.usage?.user))"
+               :text-inside="true"
+               :show-text="true"
+               :stroke-width="12"
+               :format="formatPct"
+              />
             </div>
             <div class="progress-item">
-              <div>System</div>
-              <el-progress :percentage="roundNum(data?.cpu?.usage?.system)" :status="progressStatus(roundNum(data?.cpu?.usage?.system))" />
+              <div>内核态</div>
+              <el-progress
+               :percentage="pct(data?.cpu?.usage?.system)"
+               :status="progressStatus(pct(data?.cpu?.usage?.system))"
+               :text-inside="true"
+               :show-text="true"
+               :stroke-width="12"
+               :format="formatPct"
+              />
             </div>
             <div class="progress-item">
-              <div>Idle</div>
-              <el-progress :percentage="roundNum(data?.cpu?.usage?.idle)" />
+              <div>空闲</div>
+              <el-progress
+               :percentage="pct(data?.cpu?.usage?.idle)"
+               :text-inside="true"
+               :show-text="true"
+               :stroke-width="12"
+               :format="formatPct"
+              />
             </div>
             <div class="progress-item">
-              <div>IO Wait</div>
-              <el-progress :percentage="roundNum(data?.cpu?.usage?.wait)" :status="progressStatus(roundNum(data?.cpu?.usage?.wait))" />
+              <div>I/O 等待</div>
+              <el-progress
+               :percentage="pct(data?.cpu?.usage?.wait)"
+               :status="progressStatus(pct(data?.cpu?.usage?.wait))"
+               :text-inside="true"
+               :show-text="true"
+               :stroke-width="12"
+               :format="formatPct"
+              />
             </div>
           </div>
         </el-tab-pane>
   
         <el-tab-pane label="内存">
           <el-descriptions :column="3" border>
-            <el-descriptions-item label="总内存">{{ data?.memory?.total }}</el-descriptions-item>
-            <el-descriptions-item label="已用">{{ data?.memory?.used }}</el-descriptions-item>
-            <el-descriptions-item label="可用">{{ data?.memory?.available }}</el-descriptions-item>
+            <el-descriptions-item label="总内存">{{ formatBytes(data?.memory?.total) }}</el-descriptions-item>
+            <el-descriptions-item label="已用">{{ formatBytes(data?.memory?.used) }}</el-descriptions-item>
+            <el-descriptions-item label="可用">{{ formatBytes(data?.memory?.available) }}</el-descriptions-item>
             <el-descriptions-item label="使用率">
-              <el-progress :percentage="roundNum(data?.memory?.usage_percent)" :status="progressStatus(roundNum(data?.memory?.usage_percent))" />
+              <el-progress
+                :percentage="pct(data?.memory?.usage_percent)"
+                :status="progressStatus(pct(data?.memory?.usage_percent))"
+                :text-inside="true"
+                :show-text="true"
+                :stroke-width="12"
+                :format="formatPct"
+              />
             </el-descriptions-item>
-            <el-descriptions-item label="Swap 总">{{ data?.memory?.swap_total }}</el-descriptions-item>
-            <el-descriptions-item label="Swap 已用">{{ data?.memory?.swap_used }}</el-descriptions-item>
-            <el-descriptions-item label="Swap 空闲">{{ data?.memory?.swap_free }}</el-descriptions-item>
+            <el-descriptions-item label="Swap 总">{{ formatBytes(data?.memory?.swap_total) }}</el-descriptions-item>
+            <el-descriptions-item label="Swap 已用">{{ formatBytes(data?.memory?.swap_used) }}</el-descriptions-item>
+            <el-descriptions-item label="Swap 空闲">{{ formatBytes(data?.memory?.swap_free) }}</el-descriptions-item>
           </el-descriptions>
         </el-tab-pane>
   
-        <!-- 磁盘：新增滚动容器 -->
         <el-tab-pane label="磁盘">
           <div class="scroll-pane">
             <el-table :data="data?.disk || []" border stripe style="width: 100%">
@@ -104,7 +157,14 @@
               <el-table-column prop="available" label="可用" min-width="120" />
               <el-table-column label="使用率" min-width="200">
                 <template #default="{ row }">
-                  <el-progress :percentage="row.usage_percent || 0" :status="progressStatus(row.usage_percent || 0)" />
+                  <el-progress
+                    :percentage="pct(row.usage_percent)"
+                    :status="progressStatus(pct(row.usage_percent))"
+                    :text-inside="true"
+                    :show-text="true"
+                    :stroke-width="12"
+                    :format="formatPct"
+                  />
                 </template>
               </el-table-column>
             </el-table>
@@ -155,12 +215,26 @@
               <el-table-column prop="user" label="用户" min-width="140" />
               <el-table-column label="CPU%" width="140">
                 <template #default="{ row }">
-                  <el-progress :percentage="roundNum(row.cpu_percent)" :status="progressStatus(roundNum(row.cpu_percent))" />
+                  <el-progress
+                    :percentage="pct(row.cpu_percent)"
+                    :status="progressStatus(pct(row.cpu_percent))"
+                    :text-inside="true"
+                    :show-text="true"
+                    :stroke-width="12"
+                    :format="formatPct"
+                  />
                 </template>
               </el-table-column>
               <el-table-column label="内存%" width="140">
                 <template #default="{ row }">
-                  <el-progress :percentage="roundNum(row.memory_percent)" :status="progressStatus(roundNum(row.memory_percent))" />
+                  <el-progress
+                    :percentage="pct(row.memory_percent)"
+                    :status="progressStatus(pct(row.memory_percent))"
+                    :text-inside="true"
+                    :show-text="true"
+                    :stroke-width="12"
+                    :format="formatPct"
+                  />
                 </template>
               </el-table-column>
               <el-table-column prop="memory_usage" label="内存占用" min-width="140" />
@@ -174,19 +248,18 @@
   
   <script setup lang="ts">
   
-  // 接受后端返回的 BeautifiedMetrics 对象
   const { data } = defineProps<{ data: any }>()
   
-  // 将负载值粗略映射到百分比展示（这里把负载当做百分比，取 0~100 范围）
-  function toPercent(v: number | undefined): number {
-    if (!v || v < 0) return 0
-    const p = v > 100 ? 100 : v
-    return Math.round(p)
+  
+  function pct(v: number | undefined): number {
+    if (v == null || v < 0) return 0
+    return Math.min(100, Number(v.toFixed(1)))
   }
   
-  function roundNum(v: number | undefined): number {
-    if (!v || v < 0) return 0
-    return Number(v.toFixed(1))
+  function loadToPercent(v: number | undefined, cores?: number): number {
+    if (v == null || v < 0) return 0
+    const c = cores && cores > 0 ? cores : 1
+    return Math.min(100, Number(((v / c) * 100).toFixed(1)))
   }
   
   function progressStatus(p: number): 'success' | 'warning' | 'exception' | undefined {
@@ -202,6 +275,31 @@
     if (h.includes('critical') || h.includes('error')) return 'danger'
     return 'info'
   }
+  
+  function formatPct(p: number): string {
+    const v = typeof p === 'number' && isFinite(p) ? p : 0
+    return `${v.toFixed(1)}%`
+  }
+  
+  function formatBytes(value: unknown): string {
+    if (typeof value === 'string') {
+      const n = Number(value)
+      if (!isFinite(n)) return value
+      value = n
+    }
+    if (typeof value !== 'number' || !isFinite(value) || value < 0) {
+      return `${value ?? '-'}`
+    }
+    const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    let idx = 0
+    let num = value
+    while (num >= 1024 && idx < units.length - 1) {
+      num /= 1024
+      idx++
+    }
+    const fixed = num >= 100 ? 0 : 1
+    return `${num.toFixed(fixed)} ${units[idx]}`
+  }
   </script>
   
   <style scoped>
@@ -209,15 +307,48 @@
   .block { margin-bottom: 12px; }
   .section-title { font-weight: 600; margin: 8px 0; }
   .progress-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .progress-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .progress-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .progress-item { display: flex; flex-direction: column; gap: 6px; }
-  
-  /* 新增：滚动容器样式（磁盘/网络/进程） */
-  .scroll-pane {
-    max-height: 360px;         /* 可按需要调整高度 */
-    overflow-y: auto;
-    padding-right: 4px;        /* 给滚动条留一点内边距 */
+  .progress-item :deep(.el-progress) { width: 100%; }
+
+  .progress-item :deep(.el-progress--text-inside .el-progress-bar__inner),
+  .scroll-pane :deep(.el-progress--text-inside .el-progress-bar__inner) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 0px;
   }
 
+  .progress-item :deep(.el-progress--text-inside .el-progress-bar__innerText),
+  .scroll-pane :deep(.el-progress--text-inside .el-progress-bar__innerText) {
+    color: #000 !important;
+    font-weight: 600;
+    position: relative;
+    top: -2px; 
+    text-align: left;
+  }
+
+  :deep(.el-progress--text-inside .el-progress-bar__innerText) {
+    color: #000 !important;
+    font-weight: 600;
+    position: relative;
+    top: -2px;
+    text-align: left;
+  }
+
+  :deep(.el-progress--text-inside .el-progress-bar__inner) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 6px;
+  }
+
+  .scroll-pane {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
   .mr8 { margin-right: 8px; }
   .mb8 { margin-bottom: 8px; }
   </style>

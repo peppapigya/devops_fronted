@@ -3,10 +3,10 @@
     <div class="hosts-page">
       <el-card shadow="never" class="toolbar">
         <div class="toolbar-left">
-          <el-form :inline="true" :model="query" class="filter-form">
+          <el-form :inline="true" :model="pageParam" class="filter-form">
             <el-form-item label="关键词">
               <el-input
-                v-model="query.keyword"
+                v-model="pageParam.keyword"
                 clearable
                 placeholder="名称 / IP / 用户名"
                 @keyup.enter="loadHosts"
@@ -169,8 +169,6 @@
     keyword: ''
   })
   
-  // 查询条件
-  const query = reactive({ keyword: '' })
   
   // 新增：分页后的数据源
   // const pagedHosts = computed(() => {
@@ -229,7 +227,7 @@
     form.address = h.address
     form.hostPort = h.hostPort
     form.username = h.username
-    form.hostPassword = h.hostPassword // 更新时可选填
+    form.hostPassword = ''
     form.remark = h.remark || ''
     dialogVisible.value = true
   }
@@ -269,7 +267,6 @@ function onPageChange(page: number) {
 }
 function onPageSizeChange(size: number) {
   pageParam.value.pageSize = size
-  pageParam.value.pageNumber = 1
   loadHosts()
 }
   

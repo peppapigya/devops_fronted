@@ -23,7 +23,6 @@
         </div>
       </el-card>
   
-      <!-- 主表格：经典列表样式 -->
       <el-card shadow="never" class="table-card">
         <el-table
           v-loading="loading"
@@ -53,7 +52,6 @@
           </el-table-column>
         </el-table>
 
-        <!-- 新增：分页控件 -->
         <el-pagination
           class="pagination"
           background
@@ -169,13 +167,6 @@
     keyword: ''
   })
   
-  
-  // 新增：分页后的数据源
-  // const pagedHosts = computed(() => {
-  //   const start = (currentPage.value - 1) * pageSize.value
-  //   return filteredHosts.value.slice(start, start + pageSize.value)
-  // })
-  
   function resetQuery() {
     pageParam.value.pageSize = 10
     pageParam.value.pageNumber = 1
@@ -183,7 +174,6 @@
     loadHosts()
   }
   
-  // 结果显示
   const inspectResult = ref<string>('')
   const testResult = ref<string>('')
   
@@ -245,7 +235,6 @@
   }
   const inspectObj = ref<any>(null)
     const inspectDialogVisible = ref<boolean>(false)
-  // async function loadHosts() { 使用 HostsApi.list 替代 fetch
   async function loadHosts() {
     loading.value = true
     try {
@@ -310,17 +299,14 @@ function onPageSizeChange(size: number) {
       ElMessage.success('删除成功')
       await loadHosts()
     } catch {
-      // 用户取消或删除失败均不处理
     }
   }
   
-  // async function onTest(id: number) { 使用 HostsApi.test
   async function onTest(id: number) {
     testResult.value = ''
     try {
       const txt = await HostsApi.test(id)
       ElMessage.success('连接正常')
-      // 如果返回的是对象，兜底展示为字符串
       testResult.value = typeof txt === 'string' ? txt : JSON.stringify(txt)
     } catch (e: any) {
       ElMessage.error('测试失败')
@@ -328,13 +314,11 @@ function onPageSizeChange(size: number) {
     }
   }
   
-  // async function onInspect(id: number) { 使用 HostsApi.inspect
   async function onInspect(id: number) {
     inspectResult.value = ''
     try {
       const data = await HostsApi.inspect(id)
       ElMessage.success('巡检完成')
-      // 保留原 JSON 文本
       inspectResult.value = JSON.stringify(data, null, 2)
       inspectObj.value = data
       console.log("data:",data)
@@ -358,6 +342,5 @@ function onPageSizeChange(size: number) {
   .result-card { }
   .card-header { display: flex; justify-content: space-between; align-items: center; }
   .result-pre { background: #f6f8fa; padding: 12px; border-radius: 4px; white-space: pre-wrap; }
-  /* 新增：分页样式 */
   .pagination { margin-top: 12px; display: flex; justify-content: flex-end; }
   </style>

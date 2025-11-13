@@ -83,12 +83,24 @@
           <template #header>
             <div class="card-header">
               <span>巡检结果</span>
-              <el-button link type="primary" @click="inspectResult = ''">清空</el-button>
+              <div>
+                <!-- 新增：结构化查看按钮（有结构化对象时显示） -->
+                <el-button v-if="inspectObj" link type="primary" @click="inspectDialogVisible = true">结构化查看</el-button>
+                <el-button link type="primary" @click="inspectResult = ''">清空</el-button>
+              </div>
             </div>
           </template>
           <pre class="result-pre">{{ inspectResult }}</pre>
         </el-card>
       </div>
+  
+      <!-- 新增：巡检详情弹窗（结构化展示） -->
+      <el-dialog v-model="inspectDialogVisible" title="巡检详情" width="900px" destroy-on-close>
+        <BeautifiedMetricsView v-if="inspectObj" :data="inspectObj" />
+        <template #footer>
+          <el-button @click="inspectDialogVisible = false">关闭</el-button>
+        </template>
+      </el-dialog>
   
       <!-- 弹窗表单：新增/编辑主机 -->
       <el-dialog v-model="dialogVisible" :title="form.id ? '编辑主机' : '新增主机'" width="520px" destroy-on-close>
@@ -137,16 +149,14 @@
   </template>
   
   <script setup lang="ts">
-  // 引入 Vue 与 Element Plus
   import { onMounted, reactive, ref } from 'vue'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
   import { Edit, Delete, Link, Search, Plus, Monitor } from '@element-plus/icons-vue'
   import { PageParamDTO } from '@/api/hosts/type'
-  // 将本地类型替换为统一的 API 类型，并引入 HostsApi
   import { HostsApi } from '@/api/hosts/index'
   import type { Host } from '@/api/hosts/type'
-  
-  // 列表与加载态
+  import BeautifiedMetricsView from '@/components/BeautifiedMetrics.vue' // 新增导入
+
   const hosts = ref<Host[]>([])
   const loading = ref<boolean>(false)
   
@@ -235,7 +245,8 @@
     const ss = String(d.getSeconds()).padStart(2, '0')
     return `${y}-${m}-${day} ${hh}:${mm}:${ss}`
   }
-  
+  const inspectObj = ref<any>(null)
+    const inspectDialogVisible = ref<boolean>(false)
   // async function loadHosts() { 使用 HostsApi.list 替代 fetch
   async function loadHosts() {
     loading.value = true
@@ -326,10 +337,15 @@ function onPageSizeChange(size: number) {
     try {
       const data = await HostsApi.inspect(id)
       ElMessage.success('巡检完成')
+      // 保留原 JSON 文本
       inspectResult.value = JSON.stringify(data, null, 2)
+      inspectObj.value = data
+      console.log("data:",data)
+      inspectDialogVisible.value = true
     } catch (e: any) {
       ElMessage.error('巡检失败')
       inspectResult.value = `巡检失败：${e?.message || '未知错误'}`
+      inspectObj.value = null
     }
   }
   

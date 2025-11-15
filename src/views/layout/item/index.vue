@@ -1,4 +1,4 @@
-<template @click="getPageList">
+<template>
   <h2>申报项目管理</h2>
   <el-form :inline="true" :model="pageParamsForm">
     <el-form-item label="项目名称:">
@@ -53,10 +53,10 @@
         label-width="100px"
     >
       <el-form-item prop="name" label="项目名称">
-        <el-input v-model="formData.name" placeholder="请输入项目名称"></el-input>
+        <el-input v-model="formData.name" placeholder="请输入项目名称"/>
       </el-form-item>
       <el-form-item prop="budget" label="项目预算">
-        <el-input v-model="formData.budget" placeholder="请输入项目预算"></el-input>
+        <el-input v-model="formData.budget" placeholder="请输入项目预算"/>
       </el-form-item>
       <el-form-item prop="implementationPlan" label="实施方案">
         <el-upload
@@ -68,7 +68,7 @@
             :on-remove="handleRemove"
             :on-success="handleUploadSuccess"
         >
-          <el-button type="primary" @click="">点击上传</el-button>
+          <el-button type="primary">点击上传</el-button>
           <template #tip>
             <div class="el-upload__tip">只能上传单个文件</div>
           </template>

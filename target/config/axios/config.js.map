@@ -1,0 +1,1 @@
+{"version":3,"file":"config.js","sourceRoot":"","sources":["../../../src/config/axios/config.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,GAKR;IACF;;OAEG;IACH,QAAQ,EAAE,MAAM,CAAC,IAAI,CAAC,GAAG,CAAC,aAAa;IACvC;;OAEG;IACH,WAAW,EAAE,GAAG;IAEhB;;OAEG;IACH,eAAe,EAAE,KAAK;IAEtB;;;OAGG;IACH,eAAe,EAAE,kBAAkB;CACpC,CAAA;AAED,OAAO,EAAE,MAAM,EAAE,CAAA"}

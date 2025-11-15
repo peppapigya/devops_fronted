@@ -29,24 +29,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const step = ref(1)
 const loading = ref(false)
 
-const emailForm = reactive({
-  email: ''
-})
-
-const emailRules = {
+const emailFormRef = ref<FormInstance>()
+const emailForm = ref({ email: '' })
+const emailRules = ref<FormRules>({
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
   ]
-}
+})
 
 const sendResetCode = async () => {
   loading.value = true

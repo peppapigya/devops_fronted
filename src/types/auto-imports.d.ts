@@ -58,7 +58,7 @@ declare global {
   const useCrudSchemas: typeof import('@/hooks/web/useCrudSchemas')['useCrudSchemas']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']
-  const useI18n: typeof import('@/utils/useI18n.ts')['useI18n']
+  const useI18n: typeof import('@/hooks/web/useI18n')['useI18n']
   const useId: typeof import('vue')['useId']
   const useLink: typeof import('vue-router')['useLink']
   const useMessage: typeof import('@/hooks/web/useMessage')['useMessage']

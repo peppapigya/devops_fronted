@@ -2,7 +2,7 @@
   <div>
     <h3 class="logo">
       <span class="title"><el-icon><Guide /></el-icon>Devops系统</span>
-      <el-divider style="margin: 10px 0px"></el-divider>
+      <el-divider style="margin: 10px 0px"/>
     </h3>
 
     <!-- 添加导航菜单 -->

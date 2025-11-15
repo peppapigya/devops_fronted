@@ -127,8 +127,8 @@
         <div class="footer-content">
           <h3>DevOps 自动化平台 v1.0</h3>
           <p>
-            基于 Kubernetes + Docker + Jenkins + GitLab 构建的一站式 DevOps <解决方案>  </解决方案>
-            <br>
+            基于 Kubernetes + Docker + Jenkins + GitLab 构建的一站式 DevOps 解决方案
+            <br />
             <span>Copyright ©peppa-pig 2025 </span>
 
           </p>

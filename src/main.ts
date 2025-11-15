@@ -3,10 +3,11 @@ import App from './App.vue'
 import router from './router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import 'uno.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { createI18n } from 'vue-i18n'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import myZhCn from './locales/zh-CN.ts'
+import myZhCn from '@/locales/zh-CN'
 
 const messages = (myZhCn as any).default || myZhCn
 

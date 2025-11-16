@@ -34,7 +34,7 @@
                 <div class="stats">
                   <el-statistic title="今日部署" :value="126" />
                   <el-statistic title="运行服务" :value="58" />
-                  <el-statistic title="成功率" value="98.7" suffix="%" />
+                  <el-statistic title="成功率" :value="98.7" suffix="%" />
                 </div>
               </div>
             </el-col>
@@ -190,12 +190,24 @@ const onSubmit = async () => {
     console.log(loginForm.value)
     const res = await LoginApi.login(loginForm.value)
     authUtil.setToken(res)
-    await router.push("/home")
     sessionStorage.setItem("user", JSON.stringify(res))
+    
     ElNotification.success({
-      message: '登录成功',
+      message: '登录成功，正在加载菜单...',
       duration: 2000
     })
+    
+    // 登录成功后，使用router.push让路由守卫处理动态路由加载
+    // 注意：不能直接跳转到/home，因为动态路由还没有加载完成
+    router.push('/').then(() => {
+      // 如果有用户信息，再跳转到home
+      setTimeout(() => {
+        if (sessionStorage.getItem("user")) {
+          router.push('/home')
+        }
+      }, 100)
+    })
+    
   } catch (error) {
     ElNotification.error({
       message: '登录失败，请检查用户名密码',

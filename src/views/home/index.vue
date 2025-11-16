@@ -233,7 +233,9 @@ const initCharts = () => {
 .dashboard-container {
   padding: 20px;
   background: #f5f7fa;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 100px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stats-row {

@@ -31,10 +31,18 @@ import EtoakAside from "@/components/EtoakAside.vue";
 <style scoped>
 .layout, .container {
   height: 100%;
+  width: 100%;
 }
 
 .layout {
-  padding: 10px 0px 10px 10px;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.container {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .header-content, .footer-content {
@@ -48,5 +56,19 @@ import EtoakAside from "@/components/EtoakAside.vue";
 .el-aside {
   background-color: #F9F9F9;
   border-radius: 4px;
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+}
+
+.el-main {
+  width: calc(100vw - 200px);
+  padding: 0;
+  overflow: auto;
+}
+
+.el-header, .el-footer {
+  width: calc(100vw - 200px);
+  min-width: calc(100vw - 200px);
 }
 </style>

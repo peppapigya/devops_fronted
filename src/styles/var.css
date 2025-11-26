@@ -1,19 +1,42 @@
 :root {
-  --login-bg-color: #293146;
+  /* DevOps Theme Colors */
+  --devops-bg-primary: #0f0f1a;
+  --devops-bg-secondary: #1a1a2e;
+  --devops-primary: #00f2ea;
+  --devops-secondary: #764ba2;
+  --devops-accent: #f667ff;
+  --devops-success: #38ef7d;
+  --devops-warning: #f2c94c;
+  --devops-danger: #ff4757;
 
-  --left-menu-max-width: 300px;
+  /* Glass Effect */
+  --devops-glass-bg: rgba(255, 255, 255, 0.03);
+  --devops-glass-bg-hover: rgba(255, 255, 255, 0.05);
+  --devops-glass-border: rgba(255, 255, 255, 0.05);
+  --devops-glass-blur: blur(10px);
+  --devops-glass-blur-strong: blur(20px);
 
-  --left-menu-min-width: 64px;
+  /* Text Colors */
+  --devops-text-primary: rgba(255, 255, 255, 0.9);
+  --devops-text-secondary: rgba(255, 255, 255, 0.6);
+  --devops-text-tertiary: rgba(255, 255, 255, 0.3);
 
-  --left-menu-bg-color: #001529;
+  /* Border Radius */
+  --devops-radius-lg: 16px;
+  --devops-radius-md: 12px;
+  --devops-radius-sm: 8px;
+  --devops-radius-xs: 4px;
 
-  --left-menu-bg-light-color: #0f2438;
+  /* Transitions */
+  --devops-transition: all 0.3s ease;
+  --devops-transition-fast: all 0.2s ease;
 
-  --left-menu-bg-active-color: var(--el-color-primary);
-
-  --left-menu-text-color: #bfcbd9;
-
-  --left-menu-text-active-color: #fff;
+  /* Spacing */
+  --devops-spacing-xs: 8px;
+  --devops-spacing-sm: 12px;
+  --devops-spacing-md: 16px;
+  --devops-spacing-lg: 20px;
+  --devops-spacing-xl: 24px;
 
   --left-menu-collapse-bg-active-color: var(--el-color-primary);
   /* left menu end */
@@ -48,7 +71,7 @@
 
   --app-content-padding: 20px;
 
-  --app-content-bg-color: #f5f7f9;
+  --app-content-bg-color: var(--devops-bg-primary);
 
   --app-footer-height: 50px;
 

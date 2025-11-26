@@ -13,11 +13,11 @@ import myZhCn from '@/locales/zh-CN'
 const messages = (myZhCn as any).default || myZhCn
 
 const i18n = createI18n({
-    legacy: false,
-    globalInjection: true,
-    locale: 'zh-CN',
-    fallbackLocale: 'zh-CN',
-    messages: { 'zh-CN': messages }
+  legacy: false,
+  globalInjection: true,
+  locale: 'zh-CN',
+  fallbackLocale: 'zh-CN',
+  messages: { 'zh-CN': messages }
 })
 
 const app = createApp(App)
@@ -26,7 +26,7 @@ app.use(i18n)
 app.use(ElementPlus, { locale: zhCn })
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-    app.component(key, component)
+  app.component(key, component)
 }
 
 app.directive('permission', {

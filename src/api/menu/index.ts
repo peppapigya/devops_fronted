@@ -20,14 +20,14 @@ export interface MenuCreateDTO {
   permission: string
   type: number // 1:目录 2:菜单 3:按钮
   sort: number
-  parent_id: number
+  parentId: number
   path?: string
   icon?: string
   component?: string
-  component_name?: string
+  componentName?: string
   visible: boolean
-  keep_alive: boolean
-  always_show: boolean
+  keepAlive: boolean
+  alwaysShow: boolean
 }
 
 export interface MenuUpdateDTO extends MenuCreateDTO {
@@ -39,9 +39,9 @@ export interface MenuQueryDTO {
   name?: string
   type?: number
   status?: number
-  parent_id?: number
+  parentId?: number
   page?: number
-  page_size?: number
+  pageSize?: number
 }
 
 export interface MenuListVO {
@@ -50,19 +50,19 @@ export interface MenuListVO {
   permission: string
   type: number
   sort: number
-  parent_id: number
+  parentId: number
   path?: string
   icon?: string
   component?: string
-  component_name?: string
+  componentName?: string
   status: number
   visible: boolean
-  keep_alive: boolean
-  always_show: boolean
+  keepAlive: boolean
+  alwaysShow: boolean
   creator?: string
-  create_at: string
+  createAt: string
   updater?: string
-  update_at: string
+  updateAt: string
   children?: MenuListVO[]
 }
 
@@ -70,7 +70,7 @@ export interface MenuTreeVO {
   id: number
   name: string
   label: string
-  parent_id: number
+  parentId: number
   children?: MenuTreeVO[]
 }
 
@@ -93,21 +93,21 @@ export interface ApiResponse<T = any> {
 export const MenuApi = {
   // 获取路由信息（原有的方法）
   getRoutes: (): Promise<ApiResponse<MenuRoute[]>> => service.get('/sysMenu/routes'),
-  
+
   // 菜单CRUD操作
   create: (data: MenuCreateDTO): Promise<ApiResponse> => service.post('/sysMenu', data),
-  
+
   update: (id: number, data: MenuUpdateDTO): Promise<ApiResponse> => service.put(`/sysMenu/${id}`, data),
-  
+
   delete: (id: number): Promise<ApiResponse> => service.delete(`/sysMenu/${id}`),
-  
+
   // 查询操作
-  getList: (params?: MenuQueryDTO): Promise<ApiResponse<PageResult<MenuListVO>>> => 
+  getList: (params?: MenuQueryDTO): Promise<ApiResponse<PageResult<MenuListVO>>> =>
     service.get('/sysMenu/list', { params }),
-  
+
   getTree: (): Promise<ApiResponse<MenuTreeVO[]>> => service.get('/sysMenu/tree'),
-  
+
   getOptions: (): Promise<ApiResponse<MenuOptionVO[]>> => service.get('/sysMenu/options'),
-  
+
   getById: (id: number): Promise<ApiResponse<MenuListVO>> => service.get(`/sysMenu/${id}`)
 }

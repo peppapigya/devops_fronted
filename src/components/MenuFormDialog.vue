@@ -13,9 +13,9 @@
       class="menu-form"
     >
       <!-- 父级菜单 -->
-      <el-form-item label="父级菜单" prop="parent_id">
+      <el-form-item label="父级菜单" prop="parentId">
         <el-tree-select
-          v-model="formData.parent_id"
+          v-model="formData.parentId"
           :data="menuTreeData"
           :props="{ children: 'children', label: 'name', value: 'id' }"
           check-strictly
@@ -23,8 +23,8 @@
           clearable
           filterable
           style="width: 100%"
-          name="parent_id"
-          id="parent_id"
+          name="parentId"
+          id="parentId"
         />
       </el-form-item>
 
@@ -74,8 +74,8 @@
       </el-form-item>
 
       <!-- 路由地址 -->
-      <el-form-item 
-        label="路由地址" 
+      <el-form-item
+        label="路由地址"
         prop="path"
         v-if="formData.type !== 3"
       >
@@ -89,8 +89,8 @@
       </el-form-item>
 
       <!-- 组件路径 -->
-      <el-form-item 
-        label="组件路径" 
+      <el-form-item
+        label="组件路径"
         prop="component"
         v-if="formData.type === 2"
       >
@@ -104,24 +104,40 @@
       </el-form-item>
 
       <!-- 组件名 -->
-      <el-form-item 
-        label="组件名" 
-        prop="component_name"
+      <el-form-item
+        label="组件名"
+        prop="componentName"
         v-if="formData.type === 2"
       >
         <el-input
-          v-model="formData.component_name"
+          v-model="formData.componentName"
           placeholder="请输入组件名"
           maxlength="50"
           show-word-limit
-          id="component_name"
-          name="component_name"
+          id="componentName"
+          name="componentName"
+        />
+      </el-form-item>
+
+      <!-- 父级菜单 -->
+      <el-form-item
+        label="父级菜单"
+        prop="parentId"
+      >
+        <el-tree-select
+          v-model="formData.parentId"
+          :data="menuTreeData"
+          :props="{ label: 'name', value: 'id', children: 'children' }"
+          placeholder="请选择父级菜单"
+          style="width: 100%"
+          id="parentId"
+          name="parentId"
         />
       </el-form-item>
 
       <!-- 菜单图标 -->
-      <el-form-item 
-        label="菜单图标" 
+      <el-form-item
+        label="菜单图标"
         prop="icon"
         v-if="formData.type !== 3"
       >
@@ -151,24 +167,24 @@
       </el-form-item>
 
       <!-- 是否缓存 -->
-      <el-form-item label="是否缓存" prop="keep_alive">
+      <el-form-item label="是否缓存" prop="keepAlive">
         <el-switch
-          v-model="formData.keep_alive"
+          v-model="formData.keepAlive"
           active-text="是"
           inactive-text="否"
-          id="keep_alive"
-          name="keep_alive"
+          id="keepAlive"
+          name="keepAlive"
         />
       </el-form-item>
 
       <!-- 始终显示 -->
-      <el-form-item label="始终显示" prop="always_show">
+      <el-form-item label="始终显示" prop="alwaysShow">
         <el-switch
-          v-model="formData.always_show"
+          v-model="formData.alwaysShow"
           active-text="是"
           inactive-text="否"
-          id="always_show"
-          name="always_show"
+          id="alwaysShow"
+          name="alwaysShow"
         />
       </el-form-item>
 
@@ -259,7 +275,7 @@ const iconList = [
 
 // 表单数据
 const formData = reactive({
-  parent_id: 0,
+  parentId: 0,
   type: 1,
   name: '',
   permission: '',
@@ -267,16 +283,16 @@ const formData = reactive({
   path: '',
   icon: '',
   component: '',
-  component_name: '',
+  componentName: '',
   visible: true,
-  keep_alive: false,
-  always_show: false,
+  keepAlive: false,
+  alwaysShow: false,
   status: 0
 })
 
 // 表单验证规则
 const formRules: FormRules = {
-  parent_id: [
+  parentId: [
     { required: true, message: '请选择父级菜单', trigger: 'change' }
   ],
   type: [
@@ -295,39 +311,39 @@ const formRules: FormRules = {
     { type: 'number', min: 0, message: '显示顺序必须为非负数', trigger: 'blur' }
   ],
   path: [
-    { 
+    {
       validator: (rule, value, callback) => {
         if (formData.type !== 3 && !value) {
           callback(new Error('请输入路由地址'))
         } else {
           callback()
         }
-      }, 
-      trigger: 'blur' 
+      },
+      trigger: 'blur'
     }
   ],
   component: [
-    { 
+    {
       validator: (rule, value, callback) => {
         if (formData.type === 2 && !value) {
           callback(new Error('请输入组件路径'))
         } else {
           callback()
         }
-      }, 
-      trigger: 'blur' 
+      },
+      trigger: 'blur'
     }
   ],
-  component_name: [
-    { 
+  componentName: [
+    {
       validator: (rule, value, callback) => {
         if (formData.type === 2 && value && value.length > 50) {
           callback(new Error('组件名长度不能超过50个字符'))
         } else {
           callback()
         }
-      }, 
-      trigger: 'blur' 
+      },
+      trigger: 'blur'
     }
   ]
 }
@@ -342,21 +358,21 @@ const visible = computed({
 watch(() => props.visible, async (newVal) => {
   if (newVal) {
     console.log('=== 监听器触发：visible变为true ===')
-    
+
     // 重置表单
     resetForm()
-    
+
     // 加载菜单树
     await loadMenuTree()
-    
+
     // 如果是编辑模式，加载菜单数据
     if (props.isEdit && props.menuData) {
       await loadMenuData()
     } else if (props.parentId !== null) {
-      formData.parent_id = props.parentId
-      console.log('设置parent_id为:', formData.parent_id)
+      formData.parentId = props.parentId
+      console.log('设置parentId为:', formData.parentId)
     }
-    
+
     console.log('=== 监听器完成：表单初始化完成 ===')
   }
 })
@@ -364,7 +380,7 @@ watch(() => props.visible, async (newVal) => {
 // 重置表单
 const resetForm = () => {
   Object.assign(formData, {
-    parent_id: 0,
+    parentId: 0,
     type: 1,
     name: '',
     permission: '',
@@ -372,10 +388,10 @@ const resetForm = () => {
     path: '',
     icon: '',
     component: '',
-    component_name: '',
+    componentName: '',
     visible: true,
-    keep_alive: false,
-    always_show: false,
+    keepAlive: false,
+    alwaysShow: false,
     status: 0
   })
   formRef.value?.clearValidate()
@@ -384,14 +400,14 @@ const resetForm = () => {
 // 加载菜单数据到表单
 const loadMenuData = () => {
   if (!props.menuData) return
-  
+
   console.log('=== 加载菜单数据到表单 ===')
   console.log('原始menuData:', props.menuData)
-  
+
   // 为缺失字段提供默认值，确保数据完整性
   const menuData = {
     id: props.menuData.id,
-    parent_id: props.menuData.parent_id ?? 0,
+    parentId: props.menuData.parentId ?? 0,
     type: props.menuData.type ?? 2,  // 默认菜单类型为2（菜单）
     name: props.menuData.name ?? '',
     permission: props.menuData.permission ?? (props.menuData.name ? `${props.menuData.name}:op` : 'default:permission'),
@@ -399,15 +415,15 @@ const loadMenuData = () => {
     path: props.menuData.path || '',
     icon: props.menuData.icon || '',
     component: props.menuData.component || '',
-    component_name: props.menuData.component_name || '',
+    componentName: props.menuData.componentName || '',
     visible: props.menuData.visible ?? true,
-    keep_alive: props.menuData.keep_alive ?? false,
-    always_show: props.menuData.always_show ?? false,
+    keepAlive: props.menuData.keepAlive ?? false,
+    alwaysShow: props.menuData.alwaysShow ?? false,
     status: props.menuData.status ?? 1
   }
-  
+
   Object.assign(formData, menuData)
-  
+
   console.log('修复后的menuData:', menuData)
   console.log('加载后的formData:', formData)
   console.log('各字段类型检查:')
@@ -415,7 +431,7 @@ const loadMenuData = () => {
   console.log('  permission:', typeof formData.permission, formData.permission)
   console.log('  type:', typeof formData.type, formData.type)
   console.log('  sort:', typeof formData.sort, formData.sort)
-  console.log('  parent_id:', typeof formData.parent_id, formData.parent_id)
+  console.log('  parentId:', typeof formData.parentId, formData.parentId)
 }
 
 // 加载菜单树
@@ -429,7 +445,7 @@ const loadMenuTree = async () => {
         id: 0,
         name: '无',
         label: '无',
-        parent_id: 0,
+        parentId: 0,
         children: []
       })
     }
@@ -445,12 +461,12 @@ const handleTypeChange = (value: number) => {
     // 按钮类型不需要路由地址、组件路径等
     formData.path = ''
     formData.component = ''
-    formData.component_name = ''
+    formData.componentName = ''
     formData.icon = ''
   } else if (value === 1) {
     // 目录类型不需要组件路径、组件名
     formData.component = ''
-    formData.component_name = ''
+    formData.componentName = ''
   }
 }
 
@@ -468,7 +484,7 @@ const handleClose = () => {
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return
-  
+
   try {
     // 首先确保必填字段有值（在表单验证之前）
     console.log('=== 数据预处理：确保必填字段 ===')
@@ -488,7 +504,7 @@ const handleSubmit = async () => {
       formData.sort = 0
       console.log('设置sort默认值为:', formData.sort)
     }
-    
+
     // 检查表单数据状态
     console.log('=== 表单提交前数据检查 ===')
     console.log('formData当前值:', formData)
@@ -498,8 +514,8 @@ const handleSubmit = async () => {
     console.log('formData.permission:', formData.permission, '类型:', typeof formData.permission)
     console.log('formData.type:', formData.type, '类型:', typeof formData.type)
     console.log('formData.sort:', formData.sort, '类型:', typeof formData.sort)
-    console.log('formData.parent_id:', formData.parent_id, '类型:', typeof formData.parent_id)
-    
+    console.log('formData.parentId:', formData.parentId, '类型:', typeof formData.parentId)
+
     // 执行表单验证
     console.log('=== 开始表单验证 ===')
     const validationResult = await formRef.value.validate().catch(error => {
@@ -507,9 +523,9 @@ const handleSubmit = async () => {
       throw error
     })
     console.log('表单验证结果:', validationResult)
-    
+
     submitting.value = true
-    
+
     // 构造符合后端预期的数据格式（snake_case字段名）
     console.log('=== 开始构造提交数据 ===')
     const submitData: any = {
@@ -518,23 +534,23 @@ const handleSubmit = async () => {
       permission: formData.permission?.toString().trim() || (formData.name ? `${formData.name}:op` : 'default:permission'),
       type: Number(formData.type) || 2,  // 确保必填
       sort: Number(formData.sort) || 0,  // 确保必填
-      parent_id: formData.parent_id === 0 ? 0 : Number(formData.parent_id),
+      parentId: formData.parentId === 0 ? 0 : Number(formData.parentId),
       path: formData.type === 3 ? null : (formData.path?.toString().trim() || null),
       icon: formData.icon?.toString().trim() || null,
       component: formData.type === 1 ? null : (formData.component ? formData.component.toString().trim().slice(0, 50) : null),
-      component_name: formData.type === 1 ? null : (formData.component_name ? formData.component_name.toString().trim().slice(0, 50) : null),
+      componentName: formData.type === 1 ? null : (formData.componentName ? formData.componentName.toString().trim().slice(0, 50) : null),
       visible: Boolean(formData.visible),
-      keep_alive: Boolean(formData.keep_alive),
-      always_show: Boolean(formData.always_show),
+      keepAlive: Boolean(formData.keepAlive),
+      alwaysShow: Boolean(formData.alwaysShow),
       status: Number(formData.status) || 0
     }
-    
+
     // 强制确保所有必填字段有值
     console.log('=== 验证必填字段 ===')
     console.log('原始permission:', formData.permission, '-> 最终:', submitData.permission)
     console.log('原始type:', formData.type, '-> 最终:', submitData.type)
     console.log('原始sort:', formData.sort, '-> 最终:', submitData.sort)
-    
+
     if (!submitData.permission || submitData.permission === '') {
       console.log('Permission为空，使用默认值')
       submitData.permission = submitData.name + ':op'
@@ -550,11 +566,11 @@ const handleSubmit = async () => {
       submitData.sort = 0
       console.log('Sort设置后:', submitData.sort)
     }
-    
+
     // 添加调试日志
     console.log('=== 最终提交数据 ===')
     console.log('转换后的提交数据:', JSON.stringify(submitData, null, 2))
-    
+
     if (props.isEdit && props.menuData?.id) {
       await MenuApi.update(props.menuData.id, submitData as any)
       ElMessage.success('更新成功')
@@ -562,7 +578,7 @@ const handleSubmit = async () => {
       await MenuApi.create(submitData as any)
       ElMessage.success('创建成功')
     }
-    
+
     emit('success')
   } catch (error: any) {
     console.error('=== 提交错误详情 ===')

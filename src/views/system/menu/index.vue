@@ -1,13 +1,7 @@
 <template>
   <div class="menu-management">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h2>菜单管理</h2>
-      <p>管理系统菜单权限，包括一级菜单和二级菜单的配置</p>
-    </div>
-
     <!-- 搜索条件 -->
-    <el-card class="search-card">
+    <div class="search-wrapper">
       <el-form :model="searchForm" :inline="true" class="search-form">
         <el-form-item label="菜单名称">
           <el-input
@@ -17,93 +11,72 @@
             style="width: 200px"
           />
         </el-form-item>
-        <el-form-item label="菜单类型">
-          <el-select v-model="searchForm.type" placeholder="请选择菜单类型" clearable style="width: 150px">
-            <el-option label="目录" :value="1" />
-            <el-option label="菜单" :value="2" />
-            <el-option label="按钮" :value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="菜单状态">
+        <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择菜单状态" clearable style="width: 150px">
             <el-option label="正常" :value="0" />
             <el-option label="停用" :value="1" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch" :icon="Search">搜索</el-button>
+          <el-button @click="handleSearch" :icon="Search">搜索</el-button>
           <el-button @click="handleReset" :icon="Refresh">重置</el-button>
-          <el-button type="success" @click="handleAdd" :icon="Plus">新增菜单</el-button>
+          <el-button type="primary" plain @click="handleAdd" :icon="Plus">新增</el-button>
+          <el-button type="danger" plain @click="toggleExpandAll" :icon="Sort">展开/折叠</el-button>
+          <el-button @click="handleSearch" :icon="RefreshRight">刷新菜单缓存</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
     <!-- 数据表格 -->
-    <el-card class="table-card">
+    <div class="table-wrapper">
       <el-table
+        v-if="refreshTable"
         v-loading="loading"
         :data="tableData"
         row-key="id"
+        :default-expand-all="isExpandAll"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-        default-expand-all
-        border
-        stripe
+        header-row-class-name="table-header"
+        class="custom-table"
       >
-        <el-table-column prop="name" label="菜单名称" min-width="150" align="center">
+        <el-table-column prop="name" label="菜单名称" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
-            <div class="menu-name-cell">
-              <el-icon v-if="row.icon" class="menu-icon">
-                <component :is="getIconComponent(row.icon)" />
-              </el-icon>
-              <span>{{ row.name }}</span>
-              <el-tag v-if="row.type === 1" type="info" size="small">目录</el-tag>
-              <el-tag v-else-if="row.type === 2" type="primary" size="small">菜单</el-tag>
-              <el-tag v-else type="success" size="small">按钮</el-tag>
-            </div>
+            <span class="menu-name">{{ row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="permission" label="权限标识" min-width="120" align="center" />
-        <el-table-column prop="path" label="路由地址" min-width="120" align="center" />
-        <el-table-column prop="sort" label="显示顺序" width="80" align="center" />
-        <el-table-column prop="status" label="菜单状态" width="80" align="center">
+        <el-table-column prop="icon" label="图标" width="80" align="center">
+          <template #default="{ row }">
+            <el-icon v-if="row.icon" class="menu-icon">
+              <component :is="getIconComponent(row.icon)" />
+            </el-icon>
+          </template>
+        </el-table-column>
+        <el-table-column prop="sort" label="排序" width="80" align="center" />
+        <el-table-column prop="permission" label="权限标识" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="path" label="组件路径" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="component" label="组件名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-switch
               v-model="row.status"
               :active-value="0"
               :inactive-value="1"
               @change="handleStatusChange(row)"
+              style="--el-switch-on-color: #409eff;"
             />
           </template>
         </el-table-column>
-        <el-table-column prop="visible" label="是否可见" width="80" align="center">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
-            <el-tag :type="row.visible ? 'success' : 'danger'" size="small">
-              {{ row.visible ? '是' : '否' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="create_at" label="创建时间" min-width="150" align="center" />
-        <el-table-column label="操作" width="220" align="center" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleEdit(row)" :icon="Edit">
-              编辑
-            </el-button>
-            <el-button 
-              size="small" 
-              type="success" 
-              @click="handleAddChild(row)" 
-              :icon="Plus"
-              v-if="row.type !== 3"
-            >
-              添加子菜单
-            </el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)" :icon="Delete">
-              删除
-            </el-button>
+            <div class="operation-links">
+              <el-link type="primary" :underline="false" @click="handleEdit(row)">修改</el-link>
+              <el-link type="primary" :underline="false" @click="handleAddChild(row)">新增</el-link>
+              <el-link type="danger" :underline="false" @click="handleDelete(row)">删除</el-link>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
 
     <!-- 新增/编辑对话框 -->
     <MenuFormDialog
@@ -117,9 +90,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Sort, RefreshRight } from '@element-plus/icons-vue'
 import { MenuApi, MenuListVO, MenuQueryDTO } from '@/api/menu'
 import MenuFormDialog from '@/components/MenuFormDialog.vue'
 
@@ -129,13 +102,15 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const currentMenu = ref<MenuListVO | null>(null)
 const currentParentId = ref<number | null>(null)
+const isExpandAll = ref(true)
+const refreshTable = ref(true)
 
 const searchForm = reactive<MenuQueryDTO>({
   name: '',
   type: undefined,
   status: undefined,
   page: 1,
-  page_size: 10
+  pageSize: 10
 })
 
 const tableData = ref<MenuListVO[]>([])
@@ -143,7 +118,7 @@ const tableData = ref<MenuListVO[]>([])
 // 获取图标组件
 const getIconComponent = (iconName: string) => {
   if (!iconName) return 'View'
-  
+
   // 图标映射表
   const iconMap: Record<string, string> = {
     'Menu': 'Menu',
@@ -160,7 +135,7 @@ const getIconComponent = (iconName: string) => {
     'Search': 'Search',
     'Refresh': 'Refresh'
   }
-  
+
   return iconMap[iconName] || 'View'
 }
 
@@ -177,6 +152,15 @@ const handleReset = () => {
   handleSearch()
 }
 
+// 展开/折叠
+const toggleExpandAll = () => {
+  refreshTable.value = false
+  isExpandAll.value = !isExpandAll.value
+  nextTick(() => {
+    refreshTable.value = true
+  })
+}
+
 // 新增菜单
 const handleAdd = () => {
   isEdit.value = false
@@ -188,7 +172,8 @@ const handleAdd = () => {
 // 添加子菜单
 const handleAddChild = (row: MenuListVO) => {
   isEdit.value = false
-  currentMenu.value = row
+  // 新增子菜单时不复制父节点数据，只设置父级 ID
+  currentMenu.value = null
   currentParentId.value = row.id
   dialogVisible.value = true
 }
@@ -196,7 +181,10 @@ const handleAddChild = (row: MenuListVO) => {
 // 编辑菜单
 const handleEdit = (row: MenuListVO) => {
   isEdit.value = true
+  // 复制当前行数据用于编辑
   currentMenu.value = { ...row }
+  // 设置父级 ID，编辑时保留原有父级关系
+  currentParentId.value = row.parentId ?? null
   dialogVisible.value = true
 }
 
@@ -212,7 +200,7 @@ const handleDelete = async (row: MenuListVO) => {
         type: 'warning'
       }
     )
-    
+
     await MenuApi.delete(row.id)
     ElMessage.success('删除成功')
     await loadMenuList()
@@ -225,9 +213,6 @@ const handleDelete = async (row: MenuListVO) => {
 
 // 状态变更
 const handleStatusChange = async (row: MenuListVO) => {
-  console.log('=== 状态开关改变 ===', row.id, row.status)
-  
-  // 在生产环境中才执行更新，开发环境中只做日志记录
   if (import.meta.env.PROD) {
     try {
       const updateData = {
@@ -236,16 +221,11 @@ const handleStatusChange = async (row: MenuListVO) => {
       }
       await MenuApi.update(row.id, updateData as any)
       ElMessage.success('状态更新成功')
-      console.log('状态更新成功:', row.id, row.status)
     } catch (error) {
       // 恢复原状态
       row.status = row.status === 0 ? 1 : 0
       ElMessage.error('状态更新失败')
-      console.error('状态更新失败:', error)
     }
-  } else {
-    // console.log('开发环境：跳过状态更新，记录变更即可')
-    // ElMessage.info('开发环境：状态变更已记录（' + (row.status === 0 ? '正常' : '停用') + '）')
   }
 }
 
@@ -255,11 +235,10 @@ const handleDialogSuccess = () => {
   loadMenuList()
 }
 
-// 加载菜单列表（树形结构）
 const loadMenuList = async () => {
   try {
     loading.value = true
-    
+
     // 优先尝试直接获取树形接口
     try {
       const treeResponse = await MenuApi.getTree()
@@ -272,19 +251,18 @@ const loadMenuList = async () => {
     } catch (treeError) {
       console.warn('获取树形数据失败，尝试使用列表接口:', treeError)
     }
-    
+
     // 如果树形接口失败，使用分页接口获取完整数据，但不分页
     const queryParams = {
       ...searchForm,
       page: 1,
       page_size: 1000 // 获取大量数据以构建完整树形
     }
-    
+
     const response = await MenuApi.getList(queryParams)
     if (response.code === 200) {
       // 将平面数据转换为树形结构
       tableData.value = buildTreeFromList(response.data.list)
-      console.log('菜单数据加载完成，共', tableData.value.length, '个根节点')
     }
   } catch (error) {
     console.error('加载菜单列表失败:', error)
@@ -298,28 +276,28 @@ const loadMenuList = async () => {
 const buildTreeFromList = (list: MenuListVO[]): MenuListVO[] => {
   const tree: MenuListVO[] = []
   const map = new Map<number, MenuListVO>()
-  
+
   // 先把所有节点放到map中，初始化children数组
   list.forEach(item => {
-    map.set(item.id, { 
-      ...item, 
+    map.set(item.id, {
+      ...item,
       children: item.children || [],
       // 确保所有必要字段都存在
       name: item.name,
-      parent_id: item.parent_id,
+      parentId: item.parentId,
       id: item.id
     })
   })
-  
+
   // 构建树形结构
   list.forEach(item => {
     const node = map.get(item.id)!
-    if (item.parent_id === 0 || !item.parent_id) {
+    if (item.parentId === 0 || !item.parentId) {
       // 根节点或无父节点的节点
       tree.push(node)
     } else {
       // 子节点
-      const parent = map.get(item.parent_id)
+      const parent = map.get(item.parentId)
       if (parent) {
         // 确保父节点的children数组存在
         if (!parent.children) {
@@ -332,7 +310,7 @@ const buildTreeFromList = (list: MenuListVO[]): MenuListVO[] => {
       }
     }
   })
-  
+
   // 按sort字段排序
   const sortTree = (nodes: MenuListVO[]) => {
     nodes.sort((a, b) => (a.sort || 0) - (b.sort || 0))
@@ -342,7 +320,7 @@ const buildTreeFromList = (list: MenuListVO[]): MenuListVO[] => {
       }
     })
   }
-  
+
   sortTree(tree)
   return tree
 }
@@ -356,43 +334,61 @@ onMounted(() => {
 <style scoped>
 .menu-management {
   padding: 20px;
+  background-color: #f0f2f5;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.page-header {
-  margin-bottom: 20px;
+.search-wrapper {
+  background: #fff;
+  padding: 18px 18px 0;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.page-header h2 {
-  margin: 0 0 10px 0;
-  color: #303133;
+.table-wrapper {
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.page-header p {
-  margin: 0;
-  color: #909399;
-  font-size: 14px;
+.custom-table {
+  width: 100%;
 }
 
-.search-card {
-  margin-bottom: 20px;
+:deep(.table-header th) {
+  background-color: #f8f8f9 !important;
+  color: #515a6e;
+  font-weight: 600;
+  height: 40px;
 }
 
-.search-form {
-  margin: 0;
-}
-
-.table-card {
-  margin-bottom: 20px;
-}
-
-.menu-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.menu-name {
+  font-weight: 500;
+  color: #606266;
 }
 
 .menu-icon {
-  color: #409eff;
   font-size: 16px;
+  color: #606266;
+  vertical-align: middle;
+}
+
+.operation-links {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-table__expand-icon) {
+  color: #606266;
 }
 </style>

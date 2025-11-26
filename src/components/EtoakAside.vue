@@ -1,14 +1,16 @@
 <template>
-  <div>
-    <h3 class="logo">
-      <span class="title"><el-icon><Guide /></el-icon>Devops系统</span>
-      <el-divider style="margin: 10px 0px"/>
-    </h3>
+  <div class="aside-wrapper">
+    <div class="logo-container">
+      <img src="https://element-plus.org/images/element-plus-logo.svg" alt="logo" class="logo-img" />
+      <span class="logo-text">DevOps Platform</span>
+    </div>
 
     <!-- 添加导航菜单 -->
     <el-menu
         :default-active="activeIndex"
         class="el-menu-vertical"
+        :collapse="isCollapse"
+        unique-opened
         @select="handleSelect">
       <template v-if="treeMenus && treeMenus.length">
         <template v-for="m in treeMenus" :key="m.path">
@@ -41,7 +43,7 @@
 <script lang="ts" setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Guide, House, User, Setting, Document } from "@element-plus/icons-vue";
+import { Guide, House, User, Setting, Document, Monitor, Menu, UploadFilled, Tools, Database, Folder, Bell, CollectionTag, Collection, Avatar, List, MagicStick } from "@element-plus/icons-vue";
 import { useCache, CACHE_KEY } from '@/utils/useCache'
 import { MenuApi } from '@/api/menu'
 
@@ -49,6 +51,7 @@ const router = useRouter()
 const route = useRoute()
 const activeIndex = ref(route.path)
 const menus = ref<any[]>([])
+const isCollapse = ref(false) // Can be controlled via props/event bus if needed
 
 // 图标组件映射
 const getIconComponent = (iconName: string) => {
@@ -107,7 +110,6 @@ const loadMenus = async () => {
     // 优先尝试获取树形数据
     const treeResponse = await MenuApi.getTree()
     if (treeResponse.data && treeResponse.data.length > 0) {
-      console.log('使用树形数据接口获取菜单', treeResponse.data)
       menus.value = treeResponse.data
       return
     }
@@ -120,11 +122,9 @@ const loadMenus = async () => {
   const cachedRoutes = wsCache.get(CACHE_KEY.ROLE_ROUTERS) || []
   
   if (cachedRoutes.length > 0) {
-    console.log('使用缓存的路由数据')
     // 将平铺数据转换为树形结构
     menus.value = convertFlatToTree(cachedRoutes)
   } else {
-    console.log('缓存中没有菜单数据，使用默认树形菜单')
     // 使用默认树形菜单作为后备
     menus.value = [
       {
@@ -172,6 +172,15 @@ const loadMenus = async () => {
             children: []
           }
         ]
+      },
+      {
+        id: 6,
+        name: 'AI助手',
+        label: 'AI助手',
+        path: '/ai',
+        icon: 'MagicStick',
+        parent_id: 0,
+        children: []
       }
     ]
   }
@@ -217,9 +226,9 @@ watch(
 )
 
 // 处理菜单选择
-const handleSelect = (key: string) => {
-  router.push(key)
-}
+  const handleSelect = (key: string) => {
+    router.push(key)
+  }
 
 onMounted(() => {
   loadMenus()
@@ -227,33 +236,55 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.en{
-  font-weight: 400;
+.aside-wrapper {
+  height: 100%;
+  background-color: #fff;
+  border-right: 1px solid #e6e6e6;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-container {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fff;
+}
+
+.logo-img {
+  width: 24px;
+  height: 24px;
+}
+
+.logo-text {
   font-size: 16px;
-  color: #585656;
+  font-weight: 600;
+  color: #409eff;
 }
-.logo .title{
-  font-size: 25px;
-  color: #213547;
-}
-.logo {
-  width: 200px;
+
+.el-menu-vertical {
+  border-right: none;
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* 菜单项样式 */
-:deep(.el-menu-item) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+:deep(.el-menu-item), :deep(.el-sub-menu__title) {
+  height: 50px;
+  line-height: 50px;
 }
 
-:deep(.el-sub-menu__title) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+:deep(.el-menu-item.is-active) {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-right: 3px solid #1890ff;
 }
 
-:deep(.el-icon) {
-  margin-right: 0;
+:deep(.el-menu-item:hover), :deep(.el-sub-menu__title:hover) {
+  color: #1890ff;
+  background-color: #f0f2f5;
 }
 </style>

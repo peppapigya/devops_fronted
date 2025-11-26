@@ -1,6 +1,6 @@
 import { useCache, CACHE_KEY } from '@/utils/useCache'
 // import { TokenType } from '@/api/login/type.ts'
-import { decrypt, encrypt } from '@/utils/jsencrypt.ts'
+// import { decrypt, encrypt } from '@/utils/jsencrypt.ts' // encryption disabled
 export type TokenType = {
   id: number // 编号
   accessToken: string // 访问令牌
@@ -53,13 +53,13 @@ export type LoginFormType = {
 export const getLoginForm = () => {
   const loginForm: LoginFormType = wsCache.get(CACHE_KEY.LoginForm)
   if (loginForm) {
-    loginForm.password = decrypt(loginForm.password) as string
+    // loginForm.password = decrypt(loginForm.password) as string // decryption disabled
   }
   return loginForm
 }
 
 export const setLoginForm = (loginForm: LoginFormType) => {
-  loginForm.password = encrypt(loginForm.password) as string
+  // loginForm.password = encrypt(loginForm.password) as string // encryption disabled
   wsCache.set(CACHE_KEY.LoginForm, loginForm, { exp: 30 * 24 * 60 * 60 })
 }
 

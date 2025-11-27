@@ -19,12 +19,12 @@ interface MenuRoute {
   children?: MenuRoute[]
 }
 
-// 树形数据转换为平铺数据函数
-const flattenTreeData = (treeData: any[]): MenuRoute[] => {
+// 树形数据直接转换为路由配置函数
+const treeToRoutes = (treeData: any[]): MenuRoute[] => {
   const result: MenuRoute[] = []
 
-  const traverse = (node: any) => {
-    if (!node) return
+  const traverse = (node: any): MenuRoute | null => {
+    if (!node) return null
 
     // 转换当前节点为路由格式
     const routeItem: MenuRoute = {
@@ -40,17 +40,23 @@ const flattenTreeData = (treeData: any[]): MenuRoute[] => {
       alwaysShow: node.always_show !== false
     }
 
-    result.push(routeItem)
-
     // 递归处理子节点
     if (node.children && node.children.length > 0) {
-      node.children.forEach((child: any) => {
-        traverse(child)
-      })
+      const validChildren = node.children.map((child: any) => traverse(child)).filter(Boolean) as MenuRoute[]
+      if (validChildren.length > 0) {
+        routeItem.children = validChildren
+      }
     }
+
+    return routeItem
   }
 
-  treeData.forEach(node => traverse(node))
+  treeData.forEach(node => {
+    const route = traverse(node)
+    if (route) {
+      result.push(route)
+    }
+  })
   return result
 }
 
@@ -241,8 +247,14 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 如果有token且需要加载动态路由
-  if (token && !isAsyncRouteAdded) {
+  // 检查是否需要加载动态路由
+  // 1. 如果还没加载过
+  // 2. 或者当前路径是动态路由（不在静态路由和白名单中）且找不到对应的路由
+  const currentRoute = router.getRoutes().find(route => route.path === to.path)
+  const isDynamicRoute = token && !whiteList.includes(to.path) && !staticRouteNames.includes(to.name || '')
+  const needLoadRoutes = token && (!isAsyncRouteAdded || (isDynamicRoute && !currentRoute))
+
+  if (needLoadRoutes) {
     const { wsCache } = useCache()
 
     try {
@@ -260,10 +272,10 @@ router.beforeEach(async (to, from, next) => {
           const treeRes: any = await MenuApi.getTree()
           if (treeRes.data && treeRes.data.length > 0) {
             console.log('使用树形接口获取菜单数据:', treeRes.data)
-            // 将树形数据转换为平铺格式供路由使用
-            routes = flattenTreeData(treeRes.data)
+            // 直接使用树形数据构建路由，保留父子关系
+            routes = treeToRoutes(treeRes.data)
             wsCache.set(CACHE_KEY.ROLE_ROUTERS, routes)
-            console.log('路由已缓存（从树形数据转换）')
+            console.log('路由已缓存（树形结构）')
           }
         } catch (error) {
           console.warn('获取树形数据失败，尝试获取平铺数据:', error)
@@ -306,15 +318,20 @@ router.beforeEach(async (to, from, next) => {
     isAsyncRouteAdded = true
     console.log('路由加载状态设置为true')
 
+    // 重新检查当前路由是否存在，防止动态路由添加后仍找不到
+    const updatedRoute = router.getRoutes().find(route => route.path === to.path)
+    if (!updatedRoute && to.path !== '/') {
+      console.warn('动态路由添加后仍找不到当前路由:', to.path)
+      // 如果找不到，跳转到首页
+      next({ path: '/home', replace: true })
+      return
+    }
+
     // 确保跳转的目标路由存在
     const targetPath = to.path === '/' ? '/home' : to.path
 
-    // 如果目标路径就是当前路径或者不需要跳转，直接next
-    if (to.path === targetPath) {
-      next()
-    } else {
-      next({ path: targetPath, replace: true })
-    }
+    // 使用next({ ...to, replace: true })来重新触发路由匹配，确保动态路由生效
+    next({ ...to, replace: true })
     return
   }
 

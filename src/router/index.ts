@@ -47,22 +47,6 @@ const flattenTreeData = (treeData: any[]): MenuRoute[] => {
       node.children.forEach((child: any) => {
         traverse(child)
       })
-
-      // 添加路由前置守卫，用于调试路由跳转
-      router.beforeEach((to, from, next) => {
-        console.log('路由跳转:', { from: from.path, to: to.path })
-
-        // 检查目标路由是否存在
-        const matchedRoutes = router.getRoutes().filter(route => route.path === to.path)
-        console.log(`找到 ${matchedRoutes.length} 个匹配的路由:`, matchedRoutes.map(r => r.name))
-
-        next()
-      })
-
-      // 添加路由后置守卫，用于调试组件加载
-      router.afterEach((to) => {
-        console.log(`路由加载完成: ${to.path}, 名称: ${String(to.name)}`)
-      })
     }
   }
 
@@ -127,12 +111,7 @@ const router = createRouter({
           name: 'hosts',
           component: () => import('@/views/hosts/index.vue'),
         },
-        // 菜单管理
-        {
-          path: '/menu',
-          name: 'menu',
-          component: () => import('@/views/system/menu/index.vue'),
-        },
+       
         // 个人中心
         {
           path: '/profile',
@@ -151,7 +130,7 @@ const router = createRouter({
 })
 
 // 静态路由名称列表
-const staticRouteNames = ['home', 'user', 'item', 'hosts', 'menu', 'ai', 'profile', 'settings']
+const staticRouteNames = ['home', 'user', 'item', 'hosts', 'ai', 'profile', 'settings']
 const whiteList = ['/login', '/forget-passwd']
 const toRoute = (m: MenuRoute): RouteRecordRaw => {
   // 跳过无效的路由配置
@@ -167,46 +146,50 @@ const toRoute = (m: MenuRoute): RouteRecordRaw => {
   }
 
   // 跳过与静态路由路径冲突的路由
-  const staticPaths = ['/item', '/home', '/user', '/hosts', '/menu', '/ai']
+  const staticPaths = ['/item', '/home', '/user', '/hosts', '/ai']
   if (staticPaths.includes(m.path)) {
     console.log(`跳过静态路径冲突的路由: ${m.path}`)
     return undefined as any
   }
 
-  const r: any = {
-    path: m.path,
-    name: m.name,
-    meta: {
-      title: m.name,
-      icon: m.icon,
-      permission: m.permission,
-      keepAlive: m.keepAlive
-    }
+  // 生成路由名称，如果m.name为空则使用路径转换
+const routeName = m.name && m.name.trim() ? m.name : m.path.replace(/^\//, '').replace(/\//g, '-')
+
+const r: any = {
+  path: m.path,
+  name: routeName,
+  meta: {
+    title: m.name,
+    icon: m.icon,
+    permission: m.permission,
+    keepAlive: m.keepAlive
   }
+}
 
   // 处理组件路径映射
   if (m.component) {
     // 根据后端返回的component字段映射到正确的文件路径
-    let componentKey = `/src/views/${m.component}.vue`
+    const componentKey = `/src/views/${m.component}.vue`
 
-    // 如果后端返回的是相对路径，需要调整映射
-    if (m.component.includes('/')) {
-      const parts = m.component.split('/')
-      if (parts.length > 1) {
-        // 比如 "home/index" -> "/src/views/home/index.vue"
-        componentKey = `/src/views/${m.component}.vue`
-      }
-    }
-
+    // 直接使用完整路径，不需要额外处理
     console.log('尝试加载组件:', componentKey)
+    console.log('viewModules包含的键:', Object.keys(viewModules))
+    console.log('viewModules是否包含该组件:', !!viewModules[componentKey])
 
     if (viewModules[componentKey]) {
       r.component = viewModules[componentKey]
       console.log('成功加载组件:', componentKey)
     } else {
       console.warn('找不到组件文件:', componentKey, '使用默认组件')
-      // 如果找不到组件，使用默认的布局组件或者显示错误
-      r.component = () => import('@/views/template/index.vue')
+      // 尝试直接使用import导入，看是否能找到组件
+      try {
+        r.component = () => import(`@/views/${m.component}.vue`)
+        console.log('直接导入组件成功:', `@/views/${m.component}.vue`)
+      } catch (error) {
+        console.error('直接导入组件失败:', error)
+        // 如果找不到组件，使用默认的布局组件或者显示错误
+        r.component = () => import('@/views/template/index.vue')
+      }
     }
   } else {
     // 如果没有组件配置，使用默认组件
@@ -248,6 +231,8 @@ export const resetRouter = (): void => {
 let isAsyncRouteAdded = false
 
 router.beforeEach(async (to, from, next) => {
+  console.log('全局路由守卫:', { from: from.path, to: to.path })
+
   const token = getAccessToken()
 
   // 如果没有token且不在白名单，跳转到登录页
@@ -334,6 +319,10 @@ router.beforeEach(async (to, from, next) => {
   }
 
   next()
+})
+
+router.afterEach((to) => {
+  console.log(`全局路由加载完成: ${to.path}, 名称: ${String(to.name)}`)
 })
 
 export default router

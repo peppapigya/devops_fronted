@@ -42,11 +42,27 @@
               {{ formatDate(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="360" fixed="right">
+          <el-table-column label="操作" width="360">
             <template #default="{ row }">
               <el-button size="small" :icon="Edit" @click="openEdit(row)">编辑</el-button>
-              <el-button size="small" type="primary" :icon="Link" @click="onTest(row.id)">测试连接</el-button>
-              <el-button size="small" type="warning" :icon="Monitor" @click="onInspect(row.id)">巡检</el-button>
+              <el-button 
+                size="small" 
+                type="primary" 
+                :icon="Link" 
+                :loading="actionLoading[`test-${row.id}`]" 
+                @click="onTest(row.id)"
+              >
+                测试连接
+              </el-button>
+              <el-button 
+                size="small" 
+                type="warning" 
+                :icon="Monitor" 
+                :loading="actionLoading[`inspect-${row.id}`]" 
+                @click="onInspect(row.id)"
+              >
+                巡检
+              </el-button>
               <el-button size="small" type="danger" :icon="Delete" @click="onDelete(row.id)">删除</el-button>
             </template>
           </el-table-column>
@@ -93,7 +109,7 @@
       </div>
   
       <!-- 新增：巡检详情弹窗（结构化展示） -->
-      <el-dialog v-model="inspectDialogVisible" title="巡检详情" width="900px" destroy-on-close>
+      <el-dialog v-model="inspectDialogVisible" title="巡检详情" width="900px" destroy-on-close append-to-body align-center>
         <BeautifiedMetricsView v-if="inspectObj" :data="inspectObj" />
         <template #footer>
           <el-button @click="inspectDialogVisible = false">关闭</el-button>
@@ -101,7 +117,7 @@
       </el-dialog>
   
       <!-- 弹窗表单：新增/编辑主机 -->
-      <el-dialog v-model="dialogVisible" :title="form.id ? '编辑主机' : '新增主机'" width="520px" destroy-on-close>
+      <el-dialog v-model="dialogVisible" :title="form.id ? '编辑主机' : '新增主机'" width="520px" destroy-on-close append-to-body align-center>
         <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
           <el-form-item label="名称" prop="hostName">
             <el-input v-model="form.hostName" placeholder="例如：生产-DB01" />
@@ -177,6 +193,9 @@
   const inspectResult = ref<string>('')
   const testResult = ref<string>('')
   
+  // 按钮Loading状态管理
+  const actionLoading = reactive<Record<string, boolean>>({})
+
   // 表单弹窗
   const dialogVisible = ref<boolean>(false)
   const saving = ref<boolean>(false)
@@ -304,6 +323,8 @@ function onPageSizeChange(size: number) {
   
   async function onTest(id: number) {
     testResult.value = ''
+    const key = `test-${id}`
+    actionLoading[key] = true
     try {
       const txt = await HostsApi.test(id)
       ElMessage.success('连接正常')
@@ -311,11 +332,15 @@ function onPageSizeChange(size: number) {
     } catch (e: any) {
       ElMessage.error('测试失败')
       testResult.value = `测试失败：${e?.message || '未知错误'}`
+    } finally {
+      actionLoading[key] = false
     }
   }
   
   async function onInspect(id: number) {
     inspectResult.value = ''
+    const key = `inspect-${id}`
+    actionLoading[key] = true
     try {
       const data = await HostsApi.inspect(id)
       ElMessage.success('巡检完成')
@@ -327,6 +352,8 @@ function onPageSizeChange(size: number) {
       ElMessage.error('巡检失败')
       inspectResult.value = `巡检失败：${e?.message || '未知错误'}`
       inspectObj.value = null
+    } finally {
+      actionLoading[key] = false
     }
   }
   

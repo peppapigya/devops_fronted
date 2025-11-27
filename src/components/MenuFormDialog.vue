@@ -119,22 +119,6 @@
         />
       </el-form-item>
 
-      <!-- 父级菜单 -->
-      <el-form-item
-        label="父级菜单"
-        prop="parentId"
-      >
-        <el-tree-select
-          v-model="formData.parentId"
-          :data="menuTreeData"
-          :props="{ label: 'name', value: 'id', children: 'children' }"
-          placeholder="请选择父级菜单"
-          style="width: 100%"
-          id="parentId"
-          name="parentId"
-        />
-      </el-form-item>
-
       <!-- 菜单图标 -->
       <el-form-item
         label="菜单图标"
@@ -191,8 +175,8 @@
       <!-- 菜单状态 (编辑时显示) -->
       <el-form-item label="菜单状态" prop="status" v-if="isEdit">
         <el-radio-group v-model="formData.status">
-          <el-radio :label="0">正常</el-radio>
-          <el-radio :label="1">停用</el-radio>
+          <el-radio :label="1">正常</el-radio>
+          <el-radio :label="0">停用</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
@@ -287,7 +271,7 @@ const formData = reactive({
   visible: true,
   keepAlive: false,
   alwaysShow: false,
-  status: 0
+  status: 1
 })
 
 // 表单验证规则
@@ -392,7 +376,7 @@ const resetForm = () => {
     visible: true,
     keepAlive: false,
     alwaysShow: false,
-    status: 0
+    status: 1
   })
   formRef.value?.clearValidate()
 }

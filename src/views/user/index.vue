@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <h1>用户管理页面</h1>
     <el-row :gutter="20">
       <!-- 左侧部门树 -->
       <el-col :span="4" :xs="24">
@@ -105,7 +106,6 @@
                 @click="handleExport"
               >导出</el-button>
             </el-col>
-            <right-toolbar v-model:showSearch="showSearch" @query-table="getPageList" />
           </el-row>
 
           <!-- 表格 -->
@@ -273,7 +273,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, toRefs, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox, ElTree } from 'element-plus';
 import { Search, Plus, Upload, Download, Refresh, Edit, Delete, Key, CircleCheck, DArrowRight } from '@element-plus/icons-vue';
 import { UserApi } from '@/api/user';
@@ -343,11 +344,29 @@ const data = reactive({
   }
 });
 
+const route = useRoute();
 const { queryParams, form, rules } = toRefs(data);
 const defaultProps = {
   children: 'children',
   label: 'name'
 };
+
+// 监听路由变化，当路由参数变化时重新加载数据
+watch(
+  () => route.query,
+  (newQuery, oldQuery) => {
+    console.log('用户管理组件路由参数变化:', { newQuery, oldQuery });
+    // 如果有时间戳参数变化，说明是强制刷新
+    if (newQuery.t && (!oldQuery || newQuery.t !== oldQuery.t)) {
+      console.log('检测到强制刷新信号，重新加载用户数据');
+      // 重置查询参数并重新加载数据
+      queryParams.value.pageNum = 1;
+      getDeptTree();
+      getPageList();
+    }
+  },
+  { deep: true }
+);
 
 /** 过滤部门 */
 watch(deptName, (val) => {
@@ -369,10 +388,19 @@ function filterNode(value: string, data: any) {
 /** 查询部门下拉树结构 */
 async function getDeptTree() {
   try {
+    console.log('开始获取部门树...');
     const response = await DeptApi.tree();
-    deptOptions.value = response.data;
+    console.log('部门树API返回:', response);
+    if (response && response.data) {
+      deptOptions.value = response.data;
+      console.log('部门树数据设置为:', deptOptions.value);
+    } else {
+      deptOptions.value = [];
+      console.warn('部门树数据为空，response:', response);
+    }
   } catch (error) {
     console.error('获取部门树失败:', error);
+    deptOptions.value = []; // 确保即使失败也有一个空数组
   }
 }
 
@@ -380,13 +408,27 @@ async function getDeptTree() {
 async function getPageList() {
   loading.value = true;
   try {
+    console.log('开始获取用户列表...');
+    console.log('查询参数:', queryParams.value);
     const res = await UserApi.getUserPage(queryParams.value);
-    userList.value = res.data;
-    total.value = res.total;
+    console.log('用户列表API返回:', res);
+    if (res && res.data) {
+      userList.value = res.data;
+      total.value = res.total || 0;
+      console.log('用户列表数据设置为:', userList.value);
+      console.log('用户总数设置为:', total.value);
+    } else {
+      userList.value = [];
+      total.value = 0;
+      console.warn('用户列表数据为空，res:', res);
+    }
   } catch (error) {
-    console.error(error);
+    console.error('获取用户列表失败:', error);
+    userList.value = [];
+    total.value = 0;
   } finally {
     loading.value = false;
+    console.log('加载完成，loading设置为:', loading.value);
   }
 }
 
@@ -576,8 +618,17 @@ const formatDate = (date: string) => {
 }
 
 onMounted(() => {
-  getDeptTree();
-  getPageList();
+  console.log('用户管理组件挂载');
+  console.log('初始userList:', userList.value);
+  console.log('初始deptOptions:', deptOptions.value);
+  console.log('初始loading:', loading.value);
+  getDeptTree().then(() => {
+    console.log('部门树加载完成:', deptOptions.value);
+  });
+  getPageList().then(() => {
+    console.log('用户列表加载完成:', userList.value);
+    console.log('加载完成后loading:', loading.value);
+  });
 });
 </script>
 

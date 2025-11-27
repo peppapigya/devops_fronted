@@ -11,7 +11,7 @@
         <el-main>
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
-              <component :is="Component" />
+              <component :is="Component" :key="$route.fullPath" />
             </transition>
           </router-view>
         </el-main>
@@ -85,8 +85,29 @@ import LayoutHeader from "@/components/LayoutHeader.vue";
   margin: 0;
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
   width: 100%;
+  box-sizing: border-box;
+}
+
+/* 确保容器没有内边距和外边距 */
+* {
+  box-sizing: border-box;
+}
+
+/* 确保整个应用没有额外的边距 */
+html, body, #app {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 确保路由视图完全填满父容器 */
+.router-view-container {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
 /* 页面切换动画 */

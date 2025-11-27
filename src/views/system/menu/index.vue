@@ -13,8 +13,8 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择菜单状态" clearable style="width: 150px">
-            <el-option label="正常" :value="0" />
-            <el-option label="停用" :value="1" />
+            <el-option label="正常" :value="1" />
+            <el-option label="停用" :value="0" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -59,8 +59,8 @@
           <template #default="{ row }">
             <el-switch
               v-model="row.status"
-              :active-value="0"
-              :inactive-value="1"
+              :active-value="1"
+              :inactive-value="0"
               @change="handleStatusChange(row)"
               style="--el-switch-on-color: #409eff;"
             />

@@ -225,9 +225,20 @@ watch(
     }
 )
 
-// 处理菜单选择
+// 处理菜单选择事件
   const handleSelect = (key: string) => {
-    router.push(key)
+    console.log('菜单选择:', key);
+    // 对于所有路由切换，使用replace而不是push，避免路由堆积
+    // 特别为用户管理和主机管理路由添加时间戳参数，确保组件重新渲染
+    if (key === '/user' || key === '/hosts') {
+      router.replace({
+        path: key,
+        query: { t: Date.now().toString() }
+      });
+    } else {
+      // 其他路由正常跳转
+      router.push(key);
+    }
   }
 
 onMounted(() => {

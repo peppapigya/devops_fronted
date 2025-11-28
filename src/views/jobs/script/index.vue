@@ -5,9 +5,9 @@
       <div class="form-row task-name-row">
         <div class="form-label">任务名称：</div>
         <div class="form-control">
-          <el-input 
-            v-model="formData.taskName" 
-            placeholder="请输入任务名称" 
+          <el-input
+            v-model="formData.taskName"
+            placeholder="请输入任务名称"
             clearable
             maxlength="60"
             show-word-limit
@@ -53,23 +53,24 @@
               <div class="line-numbers" ref="lineNumbers">
                 <div v-for="i in lineCount" :key="i" class="line-number">{{ i }}</div>
               </div>
-              
+
               <!-- 编辑区域 -->
               <div class="editor-content">
-                <!-- 高亮显示层 -->
-                <div class="editor-overlay" ref="editorOverlay">
-                  <pre ref="highlightPre" class="highlight-pre"><code ref="highlightCode" :class="`language-${formData.scriptType}`"></code></pre>
-                </div>
-                
+
+
                 <!-- 编辑层 -->
-                <textarea 
-                  v-model="formData.scriptContent" 
-                  class="script-editor" 
-                  placeholder="请输入脚本内容" 
+                <textarea
+                  v-model="formData.scriptContent"
+                  class="script-editor"
+                  placeholder="请输入脚本内容"
                   spellcheck="false"
                   @input="handleScriptContentChange"
                   @scroll="handleEditorScroll"
                 ></textarea>
+                <!-- 高亮显示层 -->
+                <div class="script-editor" ref="editorOverlay">
+                  <pre ref="highlightPre" class="highlight-pre"><code ref="highlightCode" :class="`language-${formData.scriptType}`"></code></pre>
+                </div>
               </div>
             </div>
           </div>
@@ -80,8 +81,8 @@
       <div class="form-row script-params-row">
         <div class="form-label">脚本参数：</div>
         <div class="form-control full-width">
-          <el-input 
-            v-model="formData.scriptParams" 
+          <el-input
+            v-model="formData.scriptParams"
             placeholder="脚本执行时传入的参数，同脚本在终端执行时的参数格式。如：/bin/bash xxx.sh xxx"
             clearable
             maxlength="5000"
@@ -95,11 +96,11 @@
       <div class="form-row timeout-row">
         <div class="form-label">超时时长：</div>
         <div class="form-control">
-          <el-input-number 
-            v-model="formData.timeout" 
-            :min="1" 
-            :max="86400" 
-            :step="1" 
+          <el-input-number
+            v-model="formData.timeout"
+            :min="1"
+            :max="86400"
+            :step="1"
             class="timeout-input"
           />
           <span class="timeout-unit">秒</span>
@@ -122,9 +123,9 @@
       <div class="form-row target-servers-row">
         <div class="form-label">目标服务器：</div>
         <div class="form-control">
-          <el-select 
-            v-model="formData.targetServers" 
-            placeholder="请选择目标服务器" 
+          <el-select
+            v-model="formData.targetServers"
+            placeholder="请选择目标服务器"
             multiple
             clearable
             class="target-servers-select"
@@ -256,18 +257,18 @@ let highlightLock = false
 const initHighlight = () => {
   // 如果正在执行高亮，跳过
   if (highlightLock) return
-  
+
   if (highlightCode.value) {
     try {
       highlightLock = true
-      
+
       // 1. 完全替换高亮层内容，避免累积问题
       highlightCode.value.textContent = ''
       highlightCode.value.innerHTML = ''
-      
+
       // 2. 直接设置文本内容，确保完全一致
       highlightCode.value.textContent = formData.scriptContent
-      
+
       // 3. 应用高亮
       hljs.highlightElement(highlightCode.value)
     } catch (error) {
@@ -291,7 +292,7 @@ const handleScriptContentChange = () => {
   if (highlightTimeout) {
     clearTimeout(highlightTimeout)
   }
-  
+
   // 设置新的定时器，延迟执行高亮
   highlightTimeout = window.setTimeout(() => {
     initHighlight()
@@ -314,10 +315,10 @@ const handleExecute = () => {
     ElMessage.warning('请选择目标服务器')
     return
   }
-  
+
   ElMessage.success('脚本执行中...')
   console.log('执行脚本:', formData)
-  
+
   // 调用执行脚本API
   // executeScriptAPI(formData)
 }
@@ -571,8 +572,8 @@ onMounted(() => {
 /* 编辑器 - 显示光标，不显示文字 */
 .script-editor {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: -30px;
+  left: -37px;
   right: 0;
   bottom: 0;
   width: 100%;
@@ -666,23 +667,23 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .form-label {
     width: auto;
     text-align: left;
     padding-right: 0;
     margin-bottom: 8px;
   }
-  
+
   .task-name-input {
     width: 100%;
   }
-  
+
   .target-servers-select {
     width: 100%;
     margin-bottom: 8px;
   }
-  
+
   .editor-wrapper {
     height: 250px;
   }

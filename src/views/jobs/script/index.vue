@@ -56,8 +56,10 @@
 
               <!-- 编辑区域 -->
               <div class="editor-content">
-
-
+                <!-- 高亮显示层 -->
+                <div class="editor-overlay" ref="editorOverlay">
+                  <pre ref="highlightPre" class="highlight-pre"><code ref="highlightCode" :class="`language-${formData.scriptType}`"></code></pre>
+                </div>
                 <!-- 编辑层 -->
                 <textarea
                   v-model="formData.scriptContent"
@@ -67,10 +69,7 @@
                   @input="handleScriptContentChange"
                   @scroll="handleEditorScroll"
                 ></textarea>
-                <!-- 高亮显示层 -->
-                <div class="script-editor" ref="editorOverlay">
-                  <pre ref="highlightPre" class="highlight-pre"><code ref="highlightCode" :class="`language-${formData.scriptType}`"></code></pre>
-                </div>
+
               </div>
             </div>
           </div>
@@ -531,8 +530,8 @@ onMounted(() => {
 /* 编辑器覆盖层 - 显示高亮内容 */
 .editor-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: -14px;
+  left: -14px;
   right: 0;
   bottom: 0;
   pointer-events: none;
@@ -572,13 +571,12 @@ onMounted(() => {
 /* 编辑器 - 显示光标，不显示文字 */
 .script-editor {
   position: absolute;
-  top: -30px;
-  left: -37px;
+  top: 16px;
+  left: 16px;
   right: 0;
   bottom: 0;
   width: 100%;
   height: 100%;
-  padding: 16px;
   border: none;
   resize: none;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;

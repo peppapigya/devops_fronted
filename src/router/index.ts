@@ -26,7 +26,6 @@ const treeToRoutes = (treeData: any[]): MenuRoute[] => {
   const traverse = (node: any): MenuRoute | null => {
     if (!node) return null
 
-    // 转换当前节点为路由格式
     const routeItem: MenuRoute = {
       id: node.id,
       name: node.name || node.label,

@@ -26,5 +26,9 @@ export const HostsApi = {
   // 巡检（后端返回 JSON）
   inspect: async (id: number) => {
     return await request.post({ url: `/hosts/${id}/inspect` })
+  },
+  // 获取下拉框列表
+  getSelectList: async () => {
+    return await request.get({ url: '/hosts/select' })
   }
 }

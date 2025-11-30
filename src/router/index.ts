@@ -116,7 +116,28 @@ const router = createRouter({
           name: 'hosts',
           component: () => import('@/views/hosts/index.vue'),
         },
-       
+        // 作业管理
+        {
+          path: '/jobs/script',
+          name: 'script',
+          component: () => import('@/views/jobs/script/index.vue'),
+        },
+        {
+          path: '/jobs/plan',
+          name: 'plan',
+          component: () => import('@/views/jobs/plan/index.vue'),
+        },
+        {
+          path: '/jobs/schedule',
+          name: 'schedule',
+          component: () => import('@/views/jobs/schedule/index.vue'),
+        },
+        {
+          path: '/jobs/log',
+          name: 'log',
+          component: () => import('@/views/jobs/log/index.vue'),
+        },
+
         // 个人中心
         {
           path: '/profile',
@@ -135,7 +156,7 @@ const router = createRouter({
 })
 
 // 静态路由名称列表
-const staticRouteNames = ['home', 'user', 'item', 'hosts', 'ai', 'profile', 'settings']
+const staticRouteNames = ['home', 'user', 'item', 'hosts', 'ai', 'profile', 'settings', 'script', 'plan', 'schedule', 'log']
 const whiteList = ['/login', '/forget-passwd']
 const toRoute = (m: MenuRoute): RouteRecordRaw => {
   // 跳过无效的路由配置
@@ -158,18 +179,18 @@ const toRoute = (m: MenuRoute): RouteRecordRaw => {
   }
 
   // 生成路由名称，如果m.name为空则使用路径转换
-const routeName = m.name && m.name.trim() ? m.name : m.path.replace(/^\//, '').replace(/\//g, '-')
+  const routeName = m.name && m.name.trim() ? m.name : m.path.replace(/^\//, '').replace(/\//g, '-')
 
-const r: any = {
-  path: m.path,
-  name: routeName,
-  meta: {
-    title: m.name,
-    icon: m.icon,
-    permission: m.permission,
-    keepAlive: m.keepAlive
+  const r: any = {
+    path: m.path,
+    name: routeName,
+    meta: {
+      title: m.name,
+      icon: m.icon,
+      permission: m.permission,
+      keepAlive: m.keepAlive
+    }
   }
-}
 
   // 处理组件路径映射
   if (m.component) {
@@ -250,7 +271,7 @@ router.beforeEach(async (to, from, next) => {
   // 1. 如果还没加载过
   // 2. 或者当前路径是动态路由（不在静态路由和白名单中）且找不到对应的路由
   const currentRoute = router.getRoutes().find(route => route.path === to.path)
-  const isDynamicRoute = token && !whiteList.includes(to.path) && !staticRouteNames.includes(to.name || '')
+  const isDynamicRoute = token && !whiteList.includes(to.path) && !staticRouteNames.includes(String(to.name || ''))
   const needLoadRoutes = token && (!isAsyncRouteAdded || (isDynamicRoute && !currentRoute))
 
   if (needLoadRoutes) {
@@ -327,7 +348,6 @@ router.beforeEach(async (to, from, next) => {
     }
 
     // 确保跳转的目标路由存在
-    const targetPath = to.path === '/' ? '/home' : to.path
 
     // 使用next({ ...to, replace: true })来重新触发路由匹配，确保动态路由生效
     next({ ...to, replace: true })

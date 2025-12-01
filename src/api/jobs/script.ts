@@ -75,4 +75,8 @@ export interface ExecuteScriptReq {
     scriptId: number
     hostIds: number[]
     parameters?: string
+    timeout?: number
+    workDir?: string
+    env?: string
+    user?: string
 }

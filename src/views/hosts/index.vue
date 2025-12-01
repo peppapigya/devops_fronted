@@ -22,11 +22,11 @@
           <el-button type="success" :icon="Plus" @click="openCreate">新增主机</el-button>
         </div>
       </el-card>
-  
+
       <el-card shadow="never" class="table-card">
         <el-table
           v-loading="loading"
-          :data="hosts"  
+          :data="hosts"
           border
           stripe
           style="width: 100%"
@@ -39,26 +39,26 @@
           <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip />
           <el-table-column label="创建时间" min-width="180">
             <template #default="{ row }">
-              {{ formatDate(row.created_at) }}
+              {{ formatDate(row.createdAt) }}
             </template>
           </el-table-column>
           <el-table-column label="操作" width="360">
             <template #default="{ row }">
               <el-button size="small" :icon="Edit" @click="openEdit(row)">编辑</el-button>
-              <el-button 
-                size="small" 
-                type="primary" 
-                :icon="Link" 
-                :loading="actionLoading[`test-${row.id}`]" 
+              <el-button
+                size="small"
+                type="primary"
+                :icon="Link"
+                :loading="actionLoading[`test-${row.id}`]"
                 @click="onTest(row.id)"
               >
                 测试连接
               </el-button>
-              <el-button 
-                size="small" 
-                type="warning" 
-                :icon="Monitor" 
-                :loading="actionLoading[`inspect-${row.id}`]" 
+              <el-button
+                size="small"
+                type="warning"
+                :icon="Monitor"
+                :loading="actionLoading[`inspect-${row.id}`]"
                 @click="onInspect(row.id)"
               >
                 巡检
@@ -80,7 +80,7 @@
           @current-change="onPageChange"
         />
       </el-card>
-  
+
       <!-- 结果卡片：巡检与连接测试 -->
       <div class="result-grid">
         <el-card v-if="testResult" class="result-card" shadow="never">
@@ -92,7 +92,7 @@
           </template>
           <pre class="result-pre">{{ testResult }}</pre>
         </el-card>
-  
+
         <el-card v-if="inspectResult" class="result-card" shadow="never">
           <template #header>
             <div class="card-header">
@@ -107,7 +107,7 @@
           <pre class="result-pre">{{ inspectResult }}</pre>
         </el-card>
       </div>
-  
+
       <!-- 新增：巡检详情弹窗（结构化展示） -->
       <el-dialog v-model="inspectDialogVisible" title="巡检详情" width="900px" destroy-on-close append-to-body align-center>
         <BeautifiedMetricsView v-if="inspectObj" :data="inspectObj" />
@@ -115,7 +115,7 @@
           <el-button @click="inspectDialogVisible = false">关闭</el-button>
         </template>
       </el-dialog>
-  
+
       <!-- 弹窗表单：新增/编辑主机 -->
       <el-dialog v-model="dialogVisible" :title="form.id ? '编辑主机' : '新增主机'" width="520px" destroy-on-close append-to-body align-center>
         <el-form ref="formRef" :model="form" :rules="formRules" label-width="100px">
@@ -135,7 +135,7 @@
             <el-input v-model="form.hostPassword" type="hostPassword" placeholder="SSH 密码（可选）" show-hostPassword />
           </el-form-item>
           <el-form-item label="备注">
-            <el-input 
+            <el-input
             v-model="form.remark"
             type="textarea"
             maxlength="500"
@@ -161,7 +161,7 @@
       </el-dialog>
     </div>
   </template>
-  
+
   <script setup lang="ts">
   import { onMounted, reactive, ref } from 'vue'
   import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
@@ -173,7 +173,7 @@
 
   const hosts = ref<Host[]>([])
   const loading = ref<boolean>(false)
-  
+
   const total = ref<number>(0)
 
 
@@ -182,17 +182,17 @@
     pageNumber: 1,
     keyword: ''
   })
-  
+
   function resetQuery() {
     pageParam.value.pageSize = 10
     pageParam.value.pageNumber = 1
     pageParam.value.keyword = ''
     loadHosts()
   }
-  
+
   const inspectResult = ref<string>('')
   const testResult = ref<string>('')
-  
+
   // 按钮Loading状态管理
   const actionLoading = reactive<Record<string, boolean>>({})
 
@@ -215,7 +215,7 @@
     hostPort: [{ required: true, message: '请输入端口', trigger: 'change' }],
     username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   }
-  
+
   function resetForm() {
     form.id = 0
     form.hostName = ''
@@ -225,7 +225,7 @@
     form.hostPassword = ''
     form.remark = ''
   }
-  
+
   function openCreate() {
     resetForm()
     dialogVisible.value = true
@@ -240,7 +240,7 @@
     form.remark = h.remark || ''
     dialogVisible.value = true
   }
-  
+
   function formatDate(dt?: string) {
     if (!dt) return ''
     const d = new Date(dt)
@@ -277,7 +277,7 @@ function onPageSizeChange(size: number) {
   pageParam.value.pageSize = size
   loadHosts()
 }
-  
+
   async function saveHost() {
     if (!formRef.value) return
     await formRef.value.validate(async (valid) => {
@@ -310,7 +310,7 @@ function onPageSizeChange(size: number) {
       }
     })
   }
-  
+
   async function onDelete(id: number) {
     try {
       await ElMessageBox.confirm('确认删除该主机？', '提示', { type: 'warning' })
@@ -320,7 +320,7 @@ function onPageSizeChange(size: number) {
     } catch {
     }
   }
-  
+
   async function onTest(id: number) {
     testResult.value = ''
     const key = `test-${id}`
@@ -336,7 +336,7 @@ function onPageSizeChange(size: number) {
       actionLoading[key] = false
     }
   }
-  
+
   async function onInspect(id: number) {
     inspectResult.value = ''
     const key = `inspect-${id}`
@@ -356,10 +356,10 @@ function onPageSizeChange(size: number) {
       actionLoading[key] = false
     }
   }
-  
+
   onMounted(loadHosts)
   </script>
-  
+
   <style scoped>
   .hosts-page { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .toolbar { display: flex; justify-content: space-between; align-items: center; }

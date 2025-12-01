@@ -7,8 +7,8 @@ export interface Host {
   username: string
   hostPassword?: string
   remark?: string
-  created_at?: string
-  updated_at?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface CreateHostDTO {

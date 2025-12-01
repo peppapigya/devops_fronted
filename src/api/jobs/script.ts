@@ -22,6 +22,24 @@ export interface JobScriptPageReq {
     category?: string
 }
 
+export interface LogItem {
+    hostAddr: string
+    status: 'pending' | 'running' | 'success' | 'failed'
+    output: string
+    time: string
+    commands?: CommandResult[]  // 存储每个命令的执行结果
+}
+
+export interface CommandResult {
+    Success: boolean
+    Output: string
+    Error: string | null
+    Host: string
+    Command: string
+    ExitCode: number
+    Duration: string
+}
+
 export const ScriptApi = {
     // Get script page
     getScriptPage: async (params: JobScriptPageReq) => {

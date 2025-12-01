@@ -210,159 +210,198 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- 执行结果 -->
-      <div class="form-row log-section-row" v-if="logs.length > 0">
-        <div class="form-label">执行结果：</div>
-        <div class="form-control full-width">
-          <!-- 模式切换 -->
-          <div class="mode-switcher">
-            <el-radio-group v-model="logDisplayMode" size="small">
-              <el-radio-button label="simple">简洁模式</el-radio-button>
-              <el-radio-button label="detailed">详细模式</el-radio-button>
-            </el-radio-group>
+    <!-- 执行结果抽屉 -->
+    <el-drawer
+        v-model="showResultDrawer"
+        title="执行结果"
+        :size="isMobile ? '100%' : '80%'"
+        direction="rtl"
+        destroy-on-close
+        class="result-drawer"
+    >
+      <div class="drawer-content">
+        <!-- 执行状态提示 -->
+        <div v-if="executing" class="execution-status">
+          <el-alert
+              type="info"
+              title="正在执行中..."
+              :closable="false"
+              show-icon
+              class="executing-alert"
+          >
+            <template #default>
+              <div class="status-content">
+                <div class="loading-text">
+                  <i class="el-icon-loading"></i>
+                  脚本正在执行中，请稍候...
+                </div>
+                <div class="target-info">
+                  <span>目标服务器：{{ formData.targetServerIds.length }} 台</span>
+                  <span class="task-name">任务：{{ formData.taskName }}</span>
+                </div>
+              </div>
+            </template>
+          </el-alert>
+        </div>
 
-            <!-- 详细模式下的主机切换 -->
-            <div class="host-switcher" v-if="logDisplayMode === 'detailed' && logs.length > 1">
-              <span class="switcher-label">切换主机：</span>
-              <el-select
-                  v-model="selectedHostIndex"
-                  size="small"
-                  class="host-select"
+        <!-- 模式切换（有结果时显示） -->
+        <div class="mode-switcher" v-if="!executing && logs.length > 0">
+          <el-radio-group v-model="logDisplayMode" size="small">
+            <el-radio-button label="simple">简洁模式</el-radio-button>
+            <el-radio-button label="detailed">详细模式</el-radio-button>
+          </el-radio-group>
+
+          <!-- 详细模式下的主机切换 -->
+          <div class="host-switcher" v-if="logDisplayMode === 'detailed' && logs.length > 1">
+            <span class="switcher-label">切换主机：</span>
+            <el-select
+                v-model="selectedHostIndex"
+                size="small"
+                class="host-select"
+            >
+              <el-option
+                  v-for="(log, index) in logs"
+                  :key="index"
+                  :label="getHostDisplayName(log)"
+                  :value="index"
               >
-                <el-option
-                    v-for="(log, index) in logs"
-                    :key="index"
-                    :label="getHostDisplayName(log)"
-                    :value="index"
-                >
-                  <div class="host-option">
-                    <span class="host-name">{{ getHostDisplayName(log) }}</span>
+                <div class="host-option">
+                  <span class="host-name">{{ getHostDisplayName(log) }}</span>
+                  <el-tag
+                      :type="getStatusType(log.status)"
+                      size="mini"
+                      class="status-tag"
+                  >
+                    {{ getStatusText(log.status) }}
+                  </el-tag>
+                </div>
+              </el-option>
+            </el-select>
+          </div>
+        </div>
+
+        <!-- 等待执行（初始状态） -->
+        <div v-if="!executing && logs.length === 0" class="waiting-execution">
+          <div class="empty-state">
+            <i class="el-icon-time empty-icon"></i>
+            <h3>等待执行</h3>
+            <p>点击执行按钮后，执行结果将在这里显示</p>
+          </div>
+        </div>
+
+        <!-- 简洁模式 -->
+        <div v-if="!executing && logs.length > 0 && logDisplayMode === 'simple'" class="log-container drawer-log-container">
+          <div
+              v-for="(log, index) in logs"
+              :key="index"
+              class="log-item"
+              :class="getLogClass(log.status)"
+          >
+            <div class="log-header">
+              <span class="log-host">{{ getHostDisplayName(log) }}</span>
+              <el-tag :type="getStatusType(log.status)" size="small">
+                {{ getStatusText(log.status) }}
+              </el-tag>
+              <span class="log-time">{{ log.time }}</span>
+            </div>
+            <pre class="log-output">{{ log.output || '等待执行...' }}</pre>
+          </div>
+        </div>
+
+        <!-- 详细模式 -->
+        <div v-else-if="!executing && logs.length > 0 && logDisplayMode === 'detailed'" class="detailed-container drawer-detailed-container">
+          <!-- 当前主机详细执行信息 -->
+          <div
+              v-if="currentHostLog"
+              class="detailed-log"
+              :class="getLogClass(currentHostLog.status)"
+          >
+            <div class="log-header">
+              <span class="log-host">{{ getHostDisplayName(currentHostLog) }}</span>
+              <el-tag :type="getStatusType(currentHostLog.status)" size="small">
+                {{ getStatusText(currentHostLog.status) }}
+              </el-tag>
+              <span class="log-time">{{ currentHostLog.time }}</span>
+              <span class="log-duration" v-if="currentHostLog.commands">
+                总耗时: {{ calculateTotalDuration(currentHostLog.commands) }}
+              </span>
+            </div>
+
+            <div class="command-steps">
+              <div
+                  v-for="(cmd, cmdIndex) in currentHostLog.commands"
+                  :key="cmdIndex"
+                  class="command-step"
+                  :class="cmd.Success ? 'step-success' : 'step-failed'"
+              >
+                <div class="step-header">
+                  <div class="step-info">
+                    <span class="step-number">步骤 {{ cmdIndex + 1 }}</span>
+                    <span class="step-command">{{ cmd.Command }}</span>
+                  </div>
+                  <div class="step-meta">
+                    <span class="step-duration">{{ cmd.Duration }}</span>
                     <el-tag
-                        :type="getStatusType(log.status)"
-                        size="mini"
-                        class="status-tag"
+                        :type="cmd.Success ? 'success' : 'danger'"
+                        size="small"
                     >
-                      {{ getStatusText(log.status) }}
+                      {{ cmd.Success ? '成功' : '失败' }}
                     </el-tag>
                   </div>
-                </el-option>
-              </el-select>
-            </div>
-          </div>
-
-          <!-- 简洁模式 -->
-          <div v-if="logDisplayMode === 'simple'" class="log-container">
-            <div
-                v-for="(log, index) in logs"
-                :key="index"
-                class="log-item"
-                :class="getLogClass(log.status)"
-            >
-              <div class="log-header">
-                <span class="log-host">{{ getHostDisplayName(log) }}</span>
-                <el-tag :type="getStatusType(log.status)" size="small">
-                  {{ getStatusText(log.status) }}
-                </el-tag>
-                <span class="log-time">{{ log.time }}</span>
-              </div>
-              <pre class="log-output">{{ log.output || '等待执行...' }}</pre>
-            </div>
-          </div>
-
-          <!-- 详细模式 -->
-          <div v-else class="detailed-container">
-            <!-- 当前主机详细执行信息 -->
-            <div
-                v-if="currentHostLog"
-                class="detailed-log"
-                :class="getLogClass(currentHostLog.status)"
-            >
-              <div class="log-header">
-                <span class="log-host">{{ getHostDisplayName(currentHostLog) }}</span>
-                <el-tag :type="getStatusType(currentHostLog.status)" size="small">
-                  {{ getStatusText(currentHostLog.status) }}
-                </el-tag>
-                <span class="log-time">{{ currentHostLog.time }}</span>
-                <span class="log-duration" v-if="currentHostLog.commands">
-                  总耗时: {{ calculateTotalDuration(currentHostLog.commands) }}
-                </span>
-              </div>
-
-              <div class="command-steps">
-                <div
-                    v-for="(cmd, cmdIndex) in currentHostLog.commands"
-                    :key="cmdIndex"
-                    class="command-step"
-                    :class="cmd.Success ? 'step-success' : 'step-failed'"
-                >
-                  <div class="step-header">
-                    <div class="step-info">
-                      <span class="step-number">步骤 {{ cmdIndex + 1 }}</span>
-                      <span class="step-command">{{ cmd.Command }}</span>
-                    </div>
-                    <div class="step-meta">
-                      <span class="step-duration">{{ cmd.Duration }}</span>
-                      <el-tag
-                          :type="cmd.Success ? 'success' : 'danger'"
-                          size="small"
-                      >
-                        {{ cmd.Success ? '成功' : '失败' }}
-                      </el-tag>
-                    </div>
-                  </div>
-                  <div class="step-output">
-                    <pre class="output-content">{{ cmd.Output }}</pre>
-                    <div v-if="cmd.Error" class="step-error">
-                      <i class="el-icon-warning"></i>
-                      {{ cmd.Error }}
-                    </div>
+                </div>
+                <div class="step-output">
+                  <pre class="output-content">{{ cmd.Output }}</pre>
+                  <div v-if="cmd.Error" class="step-error">
+                    <i class="el-icon-warning"></i>
+                    {{ cmd.Error }}
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- 主机快速导航 -->
-            <div class="host-navigation" v-if="logs.length > 1">
-              <div class="nav-title">主机列表</div>
-              <div class="host-list">
-                <div
-                    v-for="(log, index) in logs"
-                    :key="index"
-                    class="host-nav-item"
-                    :class="{ active: selectedHostIndex === index }"
-                    @click="selectedHostIndex = index"
-                >
-                  <div class="host-nav-info">
-                    <span class="host-name">{{ getHostDisplayName(log) }}</span>
-                    <el-tag
-                        :type="getStatusType(log.status)"
-                        size="small"
-                    >
-                      {{ getStatusText(log.status) }}
-                    </el-tag>
-                  </div>
-                  <div class="host-stats">
-                    <span class="stat">{{ log.commands?.length || 0 }} 个步骤</span>
-                    <span class="duration" v-if="log.commands">
-                      {{ calculateTotalDuration(log.commands) }}
-                    </span>
-                  </div>
+          <!-- 主机快速导航 -->
+          <div class="host-navigation" v-if="logs.length > 1">
+            <div class="nav-title">主机列表</div>
+            <div class="host-list">
+              <div
+                  v-for="(log, index) in logs"
+                  :key="index"
+                  class="host-nav-item"
+                  :class="{ active: selectedHostIndex === index }"
+                  @click="selectedHostIndex = index"
+              >
+                <div class="host-nav-info">
+                  <span class="host-name">{{ getHostDisplayName(log) }}</span>
+                  <el-tag
+                      :type="getStatusType(log.status)"
+                      size="small"
+                  >
+                    {{ getStatusText(log.status) }}
+                  </el-tag>
+                </div>
+                <div class="host-stats">
+                  <span class="stat">{{ log.commands?.length || 0 }} 个步骤</span>
+                  <span class="duration" v-if="log.commands">
+                    {{ calculateTotalDuration(log.commands) }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ScriptApi, type JobScript, type ExecuteScriptReq } from '@/api/jobs/script'
+import { ScriptApi, type JobScript } from '@/api/jobs/script'
 import { HostsApi } from '@/api/hosts'
 import ScriptEditor from './components/ScriptEditor.vue'
 
@@ -393,6 +432,11 @@ interface ExecuteResponse {
   [hostAddr: string]: CommandResult[]
 }
 
+// 添加响应式变量
+const showResultDrawer = ref(false)
+const isMobile = ref(false)
+
+// 原有变量定义
 const loadingHost = ref(false)
 const loadingScripts = ref(false)
 const executing = ref(false)
@@ -431,6 +475,11 @@ const logs = ref<LogItem[]>([])
 const currentHostLog = computed(() => {
   return logs.value[selectedHostIndex.value]
 })
+
+// 检查是否为移动设备
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+}
 
 // 远程搜索脚本（后端筛选）
 const remoteSearchScripts = async (query: string) => {
@@ -560,17 +609,48 @@ const handleExecute = async () => {
     return
   }
 
-  executing.value = true
+  // 先弹出抽屉显示执行状态
+  showResultDrawer.value = true
+
+  // 清空之前的日志
+  logs.value = []
   selectedHostIndex.value = 0
 
+  // 创建初始的待执行日志
+  formData.targetServerIds.forEach(hostId => {
+    const hostName = hostMap.value[hostId] || `Host #${hostId}`
+    logs.value.push({
+      hostAddr: hostName,
+      hostId,
+      status: 'running',
+      output: '正在连接服务器...',
+      time: new Date().toLocaleTimeString()
+    })
+  })
+
+  executing.value = true
+
   try {
-    const executeReq: ExecuteScriptReq = {
-      scriptId: selectedScriptId.value!,
+    // 根据脚本来源构建请求参数
+    let executeReq: any = {
       hostIds: formData.targetServerIds,
       parameters: formData.scriptParams,
       timeout: formData.timeout,
       workDir: formData.workDir,
-      env: formData.env
+      env: formData.env,
+      execUser: formData.execUser,
+      taskName: formData.taskName
+    }
+
+    // 如果是脚本库模式
+    if (scriptSource.value === 'library' && selectedScriptId.value) {
+      executeReq.scriptId = selectedScriptId.value
+      executeReq.scriptContent = scriptInfo.value.content
+      executeReq.scriptType = scriptInfo.value.type
+    } else {
+      // 手动输入模式
+      executeReq.scriptContent = manualScriptContent.value
+      executeReq.scriptType = manualScriptType.value
     }
 
     const res = await ScriptApi.executeScript(executeReq) as ExecuteResponse
@@ -607,6 +687,7 @@ const handleExecute = async () => {
     }
 
     ElMessage.success('执行完成')
+
   } catch (error: any) {
     console.error(error)
     ElMessage.error(error.message || '执行失败')
@@ -622,6 +703,7 @@ const handleExecute = async () => {
         time: new Date().toLocaleTimeString()
       }
     })
+
   } finally {
     executing.value = false
   }
@@ -654,6 +736,10 @@ const goBack = () => {
 }
 
 onMounted(async () => {
+  // 添加窗口大小监听
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+
   await remoteSearchScripts('')
   const scriptId = Number(route.query.id)
   if (scriptId) {
@@ -661,6 +747,11 @@ onMounted(async () => {
     await loadScriptInfo(scriptId)
   }
   getHosts()
+})
+
+onUnmounted(() => {
+  // 移除事件监听
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -768,9 +859,97 @@ onMounted(async () => {
   width: 100%;
 }
 
-.log-section-row {
-  margin-top: 24px;
-  align-items: flex-start;
+/* 抽屉样式 */
+.result-drawer {
+  /* 自定义抽屉样式 */
+}
+
+.result-drawer :deep(.el-drawer__header) {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.result-drawer :deep(.el-drawer__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.drawer-content {
+  padding: 0 20px 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 执行状态提示 */
+.execution-status {
+  margin-bottom: 20px;
+}
+
+.executing-alert {
+  border-radius: 4px;
+}
+
+.status-content {
+  padding: 4px 0;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.loading-text i {
+  font-size: 16px;
+  color: #409eff;
+}
+
+.target-info {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: #909399;
+}
+
+.task-name {
+  font-weight: 500;
+  color: #409eff;
+}
+
+/* 等待执行状态 */
+.waiting-execution {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: #c0c4cc;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  color: #303133;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #909399;
 }
 
 /* 模式切换器 */
@@ -805,12 +984,12 @@ onMounted(async () => {
   width: 100%;
 }
 
-/* 日志容器 */
-.log-container {
+/* 日志容器（抽屉内） */
+.drawer-log-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 600px;
   overflow-y: auto;
 }
 
@@ -877,10 +1056,12 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
-/* 详细模式 */
-.detailed-container {
+/* 详细模式（抽屉内） */
+.drawer-detailed-container {
+  flex: 1;
   display: flex;
   gap: 16px;
+  overflow: hidden;
 }
 
 .detailed-log {
@@ -889,6 +1070,7 @@ onMounted(async () => {
   border-radius: 4px;
   padding: 12px;
   background-color: #ffffff;
+  overflow-y: auto;
 }
 
 .detailed-log.log-success {
@@ -947,6 +1129,7 @@ onMounted(async () => {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   color: #303133;
   font-size: 13px;
+  word-break: break-all;
 }
 
 .step-meta {
@@ -998,6 +1181,7 @@ onMounted(async () => {
   border-radius: 4px;
   background-color: #ffffff;
   padding: 12px;
+  overflow-y: auto;
 }
 
 .nav-title {
@@ -1056,6 +1240,7 @@ onMounted(async () => {
   color: #606266;
 }
 
+/* 响应式设计 */
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
@@ -1080,7 +1265,7 @@ onMounted(async () => {
     gap: 12px;
   }
 
-  .detailed-container {
+  .drawer-detailed-container {
     flex-direction: column;
   }
 

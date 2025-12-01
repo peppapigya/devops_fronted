@@ -123,6 +123,11 @@ const router = createRouter({
           component: () => import('@/views/jobs/script/index.vue'),
         },
         {
+          path: '/jobs/script/execute',
+          name: 'scriptExecute',
+          component: () => import('@/views/jobs/script/execute.vue'),
+        },
+        {
           path: '/jobs/plan',
           name: 'plan',
           component: () => import('@/views/jobs/plan/index.vue'),
@@ -156,7 +161,7 @@ const router = createRouter({
 })
 
 // 静态路由名称列表
-const staticRouteNames = ['home', 'user', 'item', 'hosts', 'ai', 'profile', 'settings', 'script', 'plan', 'schedule', 'log']
+const staticRouteNames = ['home', 'user', 'item', 'hosts', 'ai', 'profile', 'settings', 'script', 'scriptExecute', 'plan', 'schedule', 'log']
 const whiteList = ['/login', '/forget-passwd']
 const toRoute = (m: MenuRoute): RouteRecordRaw => {
   // 跳过无效的路由配置

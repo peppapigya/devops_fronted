@@ -54,7 +54,7 @@
       </el-form-item>
 
       <el-form-item label="环境变量" prop="env">
-        <el-input v-model="formData.env" type="textarea" placeholder="请输入环境变量，JSON格式" />
+        <el-input v-model="formData.env" type="textarea" placeholder="请输入环境变量，格式为：KEY=VALUE" />
       </el-form-item>
     </el-form>
 

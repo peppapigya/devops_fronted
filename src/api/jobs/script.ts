@@ -44,7 +44,17 @@ export const ScriptApi = {
         return await request.delete({ url: `/jobs/script/${id}` })
     },
     // Get all scripts (for selection)
-    getAllScripts: async () => {
-        return await request.get({ url: '/jobs/script/list' })
+    getAllScripts: async (params?: { name?: string }) => {
+        return await request.get({ url: '/jobs/script/select', params })
+    },
+    // Execute script
+    executeScript: async (data: ExecuteScriptReq) => {
+        return await request.post({ url: '/jobs/script/execute', data })
     }
+}
+
+export interface ExecuteScriptReq {
+    scriptId: number
+    hostIds: number[]
+    parameters?: string
 }

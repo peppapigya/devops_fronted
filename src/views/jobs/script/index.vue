@@ -53,8 +53,9 @@
             {{ formatDate(row.updatedAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" type="success" :icon="VideoPlay" @click="openExecute(row)">执行</el-button>
             <el-button size="small" :icon="Edit" @click="openEdit(row)">编辑</el-button>
             <el-button size="small" type="danger" :icon="Delete" @click="onDelete(row.id)">删除</el-button>
           </template>
@@ -85,9 +86,12 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Delete, Search, Plus } from '@element-plus/icons-vue'
+import { Edit, Delete, Search, Plus, VideoPlay } from '@element-plus/icons-vue'
 import { ScriptApi, type JobScript, type JobScriptPageReq } from '@/api/jobs/script'
 import ScriptDrawer from './components/ScriptDrawer.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const loading = ref(false)
 const scripts = ref<JobScript[]>([])
@@ -137,6 +141,13 @@ const onPageSizeChange = (size: number) => {
 const openCreate = () => {
   currentId.value = undefined
   drawerVisible.value = true
+}
+
+const openExecute = (row: JobScript) => {
+  router.push({
+    path: '/jobs/script/execute',
+    query: { id: row.id }
+  })
 }
 
 const openEdit = (row: JobScript) => {

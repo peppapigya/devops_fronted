@@ -567,7 +567,10 @@ const handleExecute = async () => {
     const executeReq: ExecuteScriptReq = {
       scriptId: selectedScriptId.value!,
       hostIds: formData.targetServerIds,
-      parameters: formData.scriptParams
+      parameters: formData.scriptParams,
+      timeout: formData.timeout,
+      workDir: formData.workDir,
+      env: formData.env
     }
 
     const res = await ScriptApi.executeScript(executeReq) as ExecuteResponse

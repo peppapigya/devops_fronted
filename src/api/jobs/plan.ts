@@ -28,8 +28,8 @@ export interface JobPlanPageReq {
 
 export const PlanApi = {
     // Get plan page
-    getPlanPage: async (params: JobPlanPageReq) => {
-        return await request.get({ url: '/jobs/plan/page', params })
+    getPlanPage: async (data: JobPlanPageReq) => {
+        return await request.post({ url: '/jobs/plan/page', data: data })
     },
     // Get plan detail
     getPlan: async (id: number) => {
@@ -37,11 +37,11 @@ export const PlanApi = {
     },
     // Add plan
     addPlan: async (data: JobPlan) => {
-        return await request.post({ url: '/jobs/plan', data })
+        return await request.post({ url: '/jobs/plan/', data })
     },
     // Update plan
     updatePlan: async (data: JobPlan) => {
-        return await request.put({ url: '/jobs/plan', data })
+        return await request.put({ url: '/jobs/plan/', data })
     },
     // Delete plan
     deletePlan: async (id: number) => {

@@ -21,8 +21,8 @@ export interface JobSchedulePageReq {
 
 export const ScheduleApi = {
     // Get schedule page
-    getSchedulePage: async (params: JobSchedulePageReq) => {
-        return await request.get({ url: '/jobs/schedule/page', params })
+    getSchedulePage: async (data: JobSchedulePageReq) => {
+        return await request.post({ url: '/jobs/schedule/page', data: data })
     },
     // Get schedule detail
     getSchedule: async (id: number) => {

@@ -30,11 +30,11 @@ export const ScheduleApi = {
     },
     // Add schedule
     addSchedule: async (data: JobScheduledTask) => {
-        return await request.post({ url: '/jobs/schedule', data })
+        return await request.post({ url: '/jobs/schedule/', data })
     },
     // Update schedule
     updateSchedule: async (data: JobScheduledTask) => {
-        return await request.put({ url: '/jobs/schedule', data })
+        return await request.put({ url: '/jobs/schedule/', data })
     },
     // Delete schedule
     deleteSchedule: async (id: number) => {
@@ -42,6 +42,6 @@ export const ScheduleApi = {
     },
     // Update status
     updateStatus: async (id: number, status: number) => {
-        return await request.put({ url: `/jobs/schedule/${id}/status`, data: { status } })
+        return await request.put({ url: `/jobs/schedule/status`, data: { status,id } })
     }
 }

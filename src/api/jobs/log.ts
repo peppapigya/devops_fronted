@@ -24,8 +24,8 @@ export interface JobLogPageReq {
 
 export const LogApi = {
     // Get log page
-    getLogPage: async (params: JobLogPageReq) => {
-        return await request.get({ url: '/jobs/log/page', params })
+    getLogPage: async (data: JobLogPageReq) => {
+        return await request.post({ url: '/jobs/log/page', data: data })
     },
     // Get log detail
     getLog: async (id: number) => {

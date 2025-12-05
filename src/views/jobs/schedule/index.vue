@@ -131,7 +131,7 @@ const loadSchedules = async () => {
   loading.value = true
   try {
     const res = await ScheduleApi.getSchedulePage(pageParam)
-    schedules.value = res.list
+    schedules.value = res.data
     total.value = res.total
   } catch (error) {
     console.error(error)

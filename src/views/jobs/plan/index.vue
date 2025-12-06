@@ -101,7 +101,7 @@ const loadPlans = async () => {
   loading.value = true
   try {
     const res = await PlanApi.getPlanPage(pageParam)
-    plans.value = res.list
+    plans.value = res.data
     total.value = res.total
   } catch (error) {
     console.error(error)

@@ -17,7 +17,7 @@
         <el-input v-model="formData.name" placeholder="请输入计划名称" />
       </el-form-item>
 
-      <el-form-item label="全局变量" prop="global_vars">
+      <el-form-item label="全局变量" prop="globalVars">
         <el-input
           v-model="formData.globalVars"
           type="textarea"
@@ -26,7 +26,7 @@
         />
       </el-form-item>
 
-      <el-form-item label="目标主机" prop="host_ids">
+      <el-form-item label="目标主机" prop="hostIds">
         <el-select
           v-model="formData.hostIds"
           multiple
@@ -38,7 +38,7 @@
             v-for="host in hostList"
             :key="host.value"
             :label="host.label"
-            :value="Number(host.value)"
+            :value="host.value"
           />
         </el-select>
       </el-form-item>
@@ -55,9 +55,9 @@
 
       <el-table :data="formData.scripts" border stripe style="width: 100%; margin-top: 10px">
         <el-table-column type="index" label="序号" width="60" />
-        <el-table-column prop="script_name" label="脚本名称" min-width="150">
+        <el-table-column prop="scriptName" label="脚本名称" min-width="150">
            <template #default="{ row }">
-             {{ getScriptName(row.script_id) }}
+             {{ getScriptName(row.scriptId) }}
            </template>
         </el-table-column>
         <el-table-column label="排序" width="120">
@@ -159,7 +159,7 @@ const formData = reactive<JobPlan>({
 
 const rules = {
   name: [{ required: true, message: '请输入计划名称', trigger: 'blur' }],
-  host_ids: [{ required: true, message: '请选择目标主机', trigger: 'change' }]
+  hostIds: [{ required: true, message: '请选择目标主机', trigger: 'change' }]
 }
 
 watch(() => props.modelValue, async (val) => {
@@ -186,7 +186,11 @@ const loadData = async () => {
       HostsApi.getSelectList(),
       ScriptApi.getAllScripts()
     ])
-    hostList.value = hostsRes
+    hostList.value = hostsRes.map(h => ({
+      value: h.id ?? h.value ?? h.hostId,
+      label: h.name ?? h.label ?? h.hostName
+    }))
+
     scriptList.value = scriptsRes
   } catch (error) {
     console.error('Failed to load data', error)
@@ -210,10 +214,10 @@ const getDetail = async () => {
     Object.assign(formData, res)
     // Ensure scripts is an array
     if (!formData.scripts) formData.scripts = []
-    // Ensure host_ids is an array of numbers
     if (formData.hostIds) {
         formData.hostIds = formData.hostIds.map(Number)
     }
+    console.log('formData', formData.scripts)
   } catch (error) {
     console.error(error)
   } finally {
@@ -267,9 +271,9 @@ const confirmAddScript = () => {
   const script = scriptList.value.find(s => s.id === selectedScriptId.value)
   if (script) {
     formData.scripts?.push({
-      script_id: script.id!,
+      scriptId: script.id!,
       sort: (formData.scripts?.length || 0) + 1,
-      script_name: script.name
+      scriptName: script.name
     })
   }
   scriptSelectorVisible.value = false

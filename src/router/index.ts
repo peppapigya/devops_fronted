@@ -127,16 +127,16 @@ const router = createRouter({
           name: 'scriptExecute',
           component: () => import('@/views/jobs/script/execute.vue'),
         },
-        {
-          path: '/jobs/plan',
-          name: 'plan',
-          component: () => import('@/views/jobs/plan/index.vue'),
-        },
-        {
-          path: '/jobs/schedule',
-          name: 'schedule',
-          component: () => import('@/views/jobs/schedule/index.vue'),
-        },
+        // {
+        //   path: '/jobs/plan',
+        //   name: 'plan',
+        //   component: () => import('@/views/jobs/plan/index.vue'),
+        // },
+        // {
+        //   path: '/jobs/schedule',
+        //   name: 'schedule',
+        //   component: () => import('@/views/jobs/schedule/index.vue'),
+        // },
         {
           path: '/jobs/log',
           name: 'log',
@@ -288,6 +288,17 @@ router.beforeEach(async (to, from, next) => {
       // 先从缓存获取路由
       let routes: MenuRoute[] = wsCache.get(CACHE_KEY.ROLE_ROUTERS) || []
 
+      console.log('缓存中的路由数量:', routes ? routes.length : 0)
+      if (routes && routes.length > 0) {
+        const hasDistribute = JSON.stringify(routes).includes('distribute')
+        console.log('缓存中是否包含分发路由:', hasDistribute)
+        if (!hasDistribute) {
+          console.log('缓存中缺少分发路由，强制清除缓存以重新加载')
+          routes = [] // 强制清空，触发重新加载
+          wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+        }
+      }
+
       // 如果缓存中没有或为空，请求后端接口
       if (!routes || routes.length === 0) {
         console.log('缓存中没有路由，请求后端接口...')
@@ -297,6 +308,10 @@ router.beforeEach(async (to, from, next) => {
           const treeRes: any = await MenuApi.getTree()
           if (treeRes.data && treeRes.data.length > 0) {
             console.log('使用树形接口获取菜单数据:', treeRes.data)
+            // 检查后端返回的数据是否包含分发路由
+            const hasDistribute = JSON.stringify(treeRes.data).includes('distribute')
+            console.log('后端返回数据是否包含分发路由:', hasDistribute)
+
             // 直接使用树形数据构建路由，保留父子关系
             routes = treeToRoutes(treeRes.data)
             wsCache.set(CACHE_KEY.ROLE_ROUTERS, routes)

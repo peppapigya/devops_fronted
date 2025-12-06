@@ -94,7 +94,7 @@ const formData = reactive<JobScheduledTask>({
 
 const rules = {
   name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
-  plan_id: [{ required: true, message: '请选择执行计划', trigger: 'change' }],
+  planId: [{ required: true, message: '请选择执行计划', trigger: 'change' }],
   strategy: [{ required: true, message: '请输入Cron表达式', trigger: 'blur' }]
 }
 

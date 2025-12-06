@@ -8,19 +8,23 @@ export interface FileInfo {
     uid: number
 }
 
-// 分发结果
-export interface DistributeResult {
+// 分发结果详情
+export interface DistributeResultItem {
     hostId: number
-    hostAddr: string
-    fileName: string
+    address: string
+    taskName: string
     success: boolean
-    message?: string
+    message: string
+    duration: string
 }
+
+// 分发结果 (Map<IP, Result[]>)
+export type DistributeResult = Record<string, DistributeResultItem[]>
 
 export const DistributeApi = {
     // 分发文件到目标服务器 (支持文件上传)
     distributeFiles: async (data: FormData) => {
-        return await request.post<DistributeResult[]>({
+        return await request.post<DistributeResult>({
             url: '/jobs/distribute/upload',
             data,
             headers: {
